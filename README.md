@@ -9,6 +9,7 @@ _"Kinga" is Swahili for protection / defence._
 kinga web https://staging.example.com        # scan a live site
 kinga web http://localhost:3000 --level active   # scan your dev server
 kinga code .                                  # scan the project you are working on
+kinga watch .                                 # rescan when files change
 kinga scan . https://example.com -f html -o report.html   # both, as a shareable report
 kinga ask "how do I stop SQL injection in Django?"        # ask the built-in advisor
 ```
@@ -168,7 +169,7 @@ Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV
 explicit command or offline from cache), inspect DNS/email posture and local JavaScript assets,
 audit OpenAPI 3.x / Swagger 2.0 JSON contracts, inspect local Git history for committed secrets, and
 compare scan reports. It also creates indicative compliance mappings, saves local scan history, and
-optionally rephrases curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
+optionally rephrases curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md), [authenticated scanning](docs/authenticated-scanning.md) and [developer integrations](docs/developer-integrations.md).
 
 ```bash
 kinga assurance sbom . bom.json
