@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateBenchmark } from '../src/benchmark/metrics.js';
-import { runRuleFixtureBenchmark, RULE_FIXTURES } from './benchmark/fixtures.js';
+import { runRuleFixtureBenchmark, RULE_FIXTURES } from '../src/benchmark/fixtures.js';
 import { CODE_RULES } from '../src/scanners/code/rules.js';
 
 describe('benchmark metrics', () => {
