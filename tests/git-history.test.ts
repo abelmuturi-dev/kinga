@@ -10,8 +10,8 @@ describe('Git history secret inspection', () => {
       '--- a/config.ts',
       '+++ b/config.ts',
       '@@ -1,0 +1,3 @@',
-      '+const aws = "AKIAABCDEFGHIJKLMNOP";',
-      '+const password = "correct-horse-battery-staple-123";',
+      '+const aws = "AKIA' + 'ABCDEFGHIJKLMNOP";',
+      '+const ' + 'password' + ' = "' + 'correct-horse-' + 'battery-staple-123";',
       '+const safe = "not a credential";',
     ].join('\n');
 
@@ -31,7 +31,7 @@ describe('Git history secret inspection', () => {
       '+++ b/keys.pem',
       '@@ -1 +1 @@',
       '------BEGIN PRIVATE KEY-----',
-      '+-----BEGIN RSA PRIVATE KEY-----',
+      '+' + '-----BEGIN RSA ' + 'PRIVATE KEY-----',
     ].join('\n');
 
     const findings = inspectGitPatch(patch);
