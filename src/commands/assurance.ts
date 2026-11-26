@@ -13,6 +13,7 @@ import {
   loadScanResult,
   rephraseWithLocalModel,
   saveScanHistory,
+  scanGitHistory,
   scanBomWithOsv,
   writeCycloneDx,
 } from '../assurance/index.js';
@@ -21,7 +22,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   const [action, ...rest] = args;
   if (!action)
     throw new UsageError(
-      'Usage: kinga assurance <sbom|osv|dns|js|api|compare|compliance|history|rephrase> ...',
+      'Usage: kinga assurance <sbom|osv|dns|js|api|git-secrets|compare|compliance|history|rephrase> ...',
     );
   if (action === 'sbom') {
     const root = path.resolve(ctx.cwd, rest[0] ?? '.');
@@ -61,6 +62,30 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     if (!rest[0]) throw new UsageError('Usage: kinga assurance js <javascript-file>');
     const source = await fs.readFile(path.resolve(ctx.cwd, rest[0]), 'utf8');
     ctx.print(JSON.stringify(inspectJavaScriptAsset(source), null, 2));
+    return 0;
+  }
+  if (action === 'git-secrets') {
+    const maxIndex = rest.indexOf('--max-commits');
+    if (maxIndex >= 0 && !rest[maxIndex + 1]) {
+      throw new UsageError(
+        'Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>]',
+      );
+    }
+    const directory =
+      rest.find(
+        (item, index) =>
+          !item.startsWith('--') && !(maxIndex >= 0 && index === maxIndex + 1),
+      ) ?? '.';
+    const maxCommits = maxIndex >= 0 ? Number(rest[maxIndex + 1]) : 100;
+    if (!Number.isInteger(maxCommits) || maxCommits < 1 || maxCommits > 5000) {
+      throw new UsageError('--max-commits must be an integer between 1 and 5000.');
+    }
+    try {
+      const report = scanGitHistory(path.resolve(ctx.cwd, directory), maxCommits);
+      ctx.print(JSON.stringify(report, null, 2));
+    } catch (error) {
+      throw new UserError(error instanceof Error ? error.message : String(error));
+    }
     return 0;
   }
   if (action === 'api') {
@@ -210,6 +235,6 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   throw new UsageError(
-    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, compare, compliance, history or rephrase.`,
+    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, git-secrets, compare, compliance, history or rephrase.`,
   );
 }
