@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
 import { HttpClient } from '../src/scanners/web/http.js';
+import { DEFAULT_WEB_OPTIONS, runWebScan } from '../src/scanners/web/scan.js';
 
 const servers: Array<ReturnType<typeof createServer>> = [];
 
@@ -38,6 +39,22 @@ function client(auth?: {
 }
 
 describe('origin-scoped web authentication', () => {
+  it('refuses credentials over remote cleartext HTTP', async () => {
+    await expect(
+      runWebScan('http://api.example.test', {
+        ...DEFAULT_WEB_OPTIONS,
+        authorized: true,
+        version: 'test',
+        sleep: async () => undefined,
+        auth: {
+          origin: 'http://api.example.test',
+          headerName: 'authorization',
+          headerValue: 'Bearer test',
+        },
+      }),
+    ).rejects.toThrow(/HTTPS/);
+  });
+
   it('sends credentials to the explicitly configured origin', async () => {
     let received = '';
     const server = createServer((req, res) => {
