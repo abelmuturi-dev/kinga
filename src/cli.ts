@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { BRAND } from './brand.js';
 import { askCommand, explainCommand, topicsCommand } from './commands/explain.js';
 import { assuranceCommand } from './commands/assurance.js';
+import { watchCommand } from './commands/watch.js';
 import {
   baselineCommand,
   codeCommand,
@@ -28,6 +29,7 @@ const COMMANDS: Record<string, Handler> = {
   baseline: baselineCommand,
   init: initCommand,
   assurance: assuranceCommand,
+  watch: watchCommand,
 };
 
 /** Runs the CLI and returns the process exit code. Never calls process.exit itself. */
