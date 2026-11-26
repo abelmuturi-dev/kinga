@@ -9,8 +9,8 @@ kinga assurance api openapi.json api-security-report.json
 
 The audit checks:
 - Non-local API servers advertised over cleartext HTTP.
-- Missing server declarations and malformed server URLs.
-- Missing authentication scheme declarations.
+- Missing or malformed server declarations, embedded server credentials and cleartext transport. OpenAPI's implicit relative default server is reported as informational only.
+- Missing authentication scheme declarations, query-string API keys and HTTP Basic authentication.
 - Operations with no effective security requirement, including state-changing operations.
 - Security requirements that reference undefined schemes.
 - Duplicate or missing operation IDs.
