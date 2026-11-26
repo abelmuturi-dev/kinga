@@ -69,7 +69,6 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
       : ts.ScriptKind.JS;
   const source = ts.createSourceFile(fileName, sourceText, ts.ScriptTarget.Latest, true, kind);
   const tainted = new Set<string>();
-  const origins = new Map<string, string>();
   const flows: TaintFlow[] = [];
   const seen = new Set<string>();
 
@@ -150,7 +149,6 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
         );
       } else {
         tainted.delete(node.left.text);
-        origins.delete(node.left.text);
       }
     }
     if (ts.isCallExpression(node)) {
@@ -173,7 +171,7 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
               : 'request-derived value (tracked identifier)',
             sink,
             line: location,
-            evidence: `AST flow candidate from ${origins.get(taintedArgument.getText(source)) ?? 'untrusted input'} to ${sink}; review sanitization and validation.`,
+            evidence: `AST flow candidate from untrusted input to ${sink}; review sanitization and validation.`,
           });
         }
       }
