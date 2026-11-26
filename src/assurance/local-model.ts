@@ -12,7 +12,8 @@ export async function rephraseWithLocalModel(
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        model, stream: false,
+        model,
+        stream: false,
         prompt: [
           'Rewrite this curated security advice in clear simple language.',
           'Do not add facts, vulnerabilities, code, commands or remediation steps.',
@@ -24,9 +25,15 @@ export async function rephraseWithLocalModel(
     });
     if (!response.ok) throw new Error(`Local model request failed with HTTP ${response.status}.`);
     const payload: unknown = await response.json();
-    if (typeof payload !== 'object' || payload === null || typeof (payload as { response?: unknown }).response !== 'string') {
+    if (
+      typeof payload !== 'object' ||
+      payload === null ||
+      typeof (payload as { response?: unknown }).response !== 'string'
+    ) {
       throw new Error('Local model returned an invalid response.');
     }
     return (payload as { response: string }).response.trim();
-  } finally { clearTimeout(timeout); }
+  } finally {
+    clearTimeout(timeout);
+  }
 }

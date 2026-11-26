@@ -5,11 +5,14 @@ import { CODE_RULES } from '../src/scanners/code/rules.js';
 
 describe('benchmark metrics', () => {
   it('calculates precision, recall and F1 from expected and actual rule IDs', () => {
-    const result = evaluateBenchmark([
-      { id: 'vulnerable', expectedRules: ['SQLI'], actualRules: ['SQLI', 'XSS'] },
-      { id: 'secure', expectedRules: [], actualRules: [] },
-      { id: 'missed', expectedRules: ['XSS'], actualRules: [] },
-    ], ['SQLI', 'XSS']);
+    const result = evaluateBenchmark(
+      [
+        { id: 'vulnerable', expectedRules: ['SQLI'], actualRules: ['SQLI', 'XSS'] },
+        { id: 'secure', expectedRules: [], actualRules: [] },
+        { id: 'missed', expectedRules: ['XSS'], actualRules: [] },
+      ],
+      ['SQLI', 'XSS'],
+    );
     expect(result.truePositives).toBe(1);
     expect(result.falsePositives).toBe(1);
     expect(result.falseNegatives).toBe(1);
@@ -20,15 +23,20 @@ describe('benchmark metrics', () => {
   });
 
   it('rejects duplicate fixture IDs', () => {
-    expect(() => evaluateBenchmark([
-      { id: 'same', expectedRules: [], actualRules: [] },
-      { id: 'same', expectedRules: [], actualRules: [] },
-    ])).toThrow(/Duplicate/);
+    expect(() =>
+      evaluateBenchmark([
+        { id: 'same', expectedRules: [], actualRules: [] },
+        { id: 'same', expectedRules: [], actualRules: [] },
+      ]),
+    ).toThrow(/Duplicate/);
   });
 
   it('runs positive and negative fixtures against the real Kinga regex rule set', () => {
     const cases = runRuleFixtureBenchmark();
-    const metrics = evaluateBenchmark(cases, CODE_RULES.map((rule) => rule.id));
+    const metrics = evaluateBenchmark(
+      cases,
+      CODE_RULES.map((rule) => rule.id),
+    );
     expect(cases).toHaveLength(RULE_FIXTURES.length);
     expect(metrics.falsePositives).toBe(0);
     expect(metrics.falseNegatives).toBe(0);

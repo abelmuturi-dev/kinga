@@ -64,11 +64,21 @@ function validatePackages(packages: readonly OsvPackage[], max: number): OsvPack
   const seen = new Set<string>();
   const result: OsvPackage[] = [];
   for (const pkg of packages) {
-    if (!pkg || typeof pkg.name !== 'string' || typeof pkg.version !== 'string' ||
-        typeof pkg.ecosystem !== 'string' || pkg.name.trim() === '' || pkg.version.trim() === '') {
+    if (
+      !pkg ||
+      typeof pkg.name !== 'string' ||
+      typeof pkg.version !== 'string' ||
+      typeof pkg.ecosystem !== 'string' ||
+      pkg.name.trim() === '' ||
+      pkg.version.trim() === ''
+    ) {
       throw new Error('Every OSV package needs a non-empty ecosystem, name and exact version.');
     }
-    const normalized = { ecosystem: pkg.ecosystem, name: pkg.name.trim(), version: pkg.version.trim() };
+    const normalized = {
+      ecosystem: pkg.ecosystem,
+      name: pkg.name.trim(),
+      version: pkg.version.trim(),
+    };
     const key = packageKey(normalized);
     if (!seen.has(key)) {
       seen.add(key);
@@ -79,8 +89,11 @@ function validatePackages(packages: readonly OsvPackage[], max: number): OsvPack
 }
 
 function isVulnerability(value: unknown): value is OsvVulnerability {
-  return typeof value === 'object' && value !== null &&
-    typeof (value as { id?: unknown }).id === 'string';
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as { id?: unknown }).id === 'string'
+  );
 }
 
 /** Query OSV in a bounded batch. This function never executes package-manager commands. */
@@ -107,19 +120,25 @@ export async function queryOsv(
     });
     if (!response.ok) throw new Error(`OSV request failed with HTTP ${response.status}.`);
     const payload: unknown = await response.json();
-    if (typeof payload !== 'object' || payload === null ||
-        !Array.isArray((payload as { results?: unknown }).results)) {
+    if (
+      typeof payload !== 'object' ||
+      payload === null ||
+      !Array.isArray((payload as { results?: unknown }).results)
+    ) {
       throw new Error('OSV returned an invalid batch response.');
     }
     const results = (payload as { results: unknown[] }).results;
-    if (results.length !== batch.length) throw new Error('OSV returned an unexpected result count.');
+    if (results.length !== batch.length)
+      throw new Error('OSV returned an unexpected result count.');
     const queriedAt = new Date().toISOString();
     return batch.map((pkg, index) => {
       const result = results[index];
-      const vulnerabilities = typeof result === 'object' && result !== null &&
+      const vulnerabilities =
+        typeof result === 'object' &&
+        result !== null &&
         Array.isArray((result as { vulns?: unknown }).vulns)
-        ? (result as { vulns: unknown[] }).vulns.filter(isVulnerability)
-        : [];
+          ? (result as { vulns: unknown[] }).vulns.filter(isVulnerability)
+          : [];
       return { ...pkg, vulnerabilities, queriedAt };
     });
   } finally {
@@ -146,7 +165,10 @@ export async function readOsvCache(file: string): Promise<OsvCache | null> {
 }
 
 /** Atomically persist OSV results locally with restrictive file permissions. */
-export async function writeOsvCache(file: string, entries: readonly OsvCacheEntry[]): Promise<OsvCache> {
+export async function writeOsvCache(
+  file: string,
+  entries: readonly OsvCacheEntry[],
+): Promise<OsvCache> {
   const absolute = path.resolve(file);
   const directory = path.dirname(absolute);
   await mkdir(directory, { recursive: true, mode: 0o700 });
@@ -157,7 +179,10 @@ export async function writeOsvCache(file: string, entries: readonly OsvCacheEntr
     entries: [...entries],
   };
   const temporary = `${absolute}.${process.pid}.tmp`;
-  await writeFile(temporary, `${JSON.stringify(cache, null, 2)}\n`, { encoding: 'utf8', mode: 0o600 });
+  await writeFile(temporary, `${JSON.stringify(cache, null, 2)}\n`, {
+    encoding: 'utf8',
+    mode: 0o600,
+  });
   await rename(temporary, absolute);
   return cache;
 }

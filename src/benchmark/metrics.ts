@@ -18,14 +18,17 @@ export interface BenchmarkMetrics {
   /** Only meaningful when a finite ruleUniverse is supplied. */
   falsePositiveRate: number;
   evaluatedCases: number;
-  ruleMetrics: Record<string, {
-    truePositives: number;
-    falsePositives: number;
-    falseNegatives: number;
-    precision: number;
-    recall: number;
-    f1: number;
-  }>;
+  ruleMetrics: Record<
+    string,
+    {
+      truePositives: number;
+      falsePositives: number;
+      falseNegatives: number;
+      precision: number;
+      recall: number;
+      f1: number;
+    }
+  >;
 }
 
 function rate(numerator: number, denominator: number, emptyValue = 0): number {
@@ -47,7 +50,8 @@ export function evaluateBenchmark(
 ): BenchmarkMetrics {
   const caseIds = new Set<string>();
   const universe = new Set(ruleUniverse);
-  if (universe.size !== ruleUniverse.length) throw new Error('ruleUniverse contains duplicate rule IDs.');
+  if (universe.size !== ruleUniverse.length)
+    throw new Error('ruleUniverse contains duplicate rule IDs.');
 
   let truePositives = 0;
   let falsePositives = 0;
@@ -62,13 +66,18 @@ export function evaluateBenchmark(
     caseIds.add(testCase.id);
     const expected = new Set(testCase.expectedRules);
     const actual = new Set(testCase.actualRules);
-    if (expected.size !== testCase.expectedRules.length || actual.size !== testCase.actualRules.length) {
+    if (
+      expected.size !== testCase.expectedRules.length ||
+      actual.size !== testCase.actualRules.length
+    ) {
       throw new Error(`Benchmark case ${testCase.id} contains duplicate rule IDs.`);
     }
     if (ruleUniverse.length > 0) {
       const outside = [...expected, ...actual].filter((id) => !universe.has(id));
       if (outside.length > 0) {
-        throw new Error(`Benchmark case ${testCase.id} references rules outside ruleUniverse: ${outside.join(', ')}`);
+        throw new Error(
+          `Benchmark case ${testCase.id} references rules outside ruleUniverse: ${outside.join(', ')}`,
+        );
       }
     } else {
       for (const id of [...expected, ...actual]) universe.add(id);
@@ -78,10 +87,16 @@ export function evaluateBenchmark(
       const shouldFind = expected.has(id);
       const didFind = actual.has(id);
       const counts = perRule.get(id) ?? { tp: 0, fp: 0, fn: 0 };
-      if (shouldFind && didFind) { truePositives++; counts.tp++; }
-      else if (!shouldFind && didFind) { falsePositives++; counts.fp++; }
-      else if (shouldFind && !didFind) { falseNegatives++; counts.fn++; }
-      else if (ruleUniverse.length > 0) trueNegatives++;
+      if (shouldFind && didFind) {
+        truePositives++;
+        counts.tp++;
+      } else if (!shouldFind && didFind) {
+        falsePositives++;
+        counts.fp++;
+      } else if (shouldFind && !didFind) {
+        falseNegatives++;
+        counts.fn++;
+      } else if (ruleUniverse.length > 0) trueNegatives++;
       perRule.set(id, counts);
     }
   }

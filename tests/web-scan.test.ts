@@ -134,26 +134,29 @@ describe('web helpers', () => {
 
   it('does not follow a cross-host redirect', async () => {
     const seen: string[] = [];
-    await withServer((req, res) => {
-      seen.push(req.url ?? '');
-      res.writeHead(302, { location: 'http://example.invalid/redirect-target' });
-      res.end();
-    }, async (url) => {
-      const client = new HttpClient({
-        timeoutMs: 1000,
-        maxBodyBytes: 1024,
-        delayMs: 0,
-        maxRequests: 5,
-        userAgent: 'Kinga-test',
-        insecure: false,
-        sleep: async () => undefined,
-      });
-      const result = await client.request(url);
-      expect('failed' in result).toBe(false);
-      if (!('failed' in result)) expect(result.status).toBe(302);
-      expect(seen).toEqual(['/']);
-      expect(client.requests).toBe(1);
-    });
+    await withServer(
+      (req, res) => {
+        seen.push(req.url ?? '');
+        res.writeHead(302, { location: 'http://example.invalid/redirect-target' });
+        res.end();
+      },
+      async (url) => {
+        const client = new HttpClient({
+          timeoutMs: 1000,
+          maxBodyBytes: 1024,
+          delayMs: 0,
+          maxRequests: 5,
+          userAgent: 'Kinga-test',
+          insecure: false,
+          sleep: async () => undefined,
+        });
+        const result = await client.request(url);
+        expect('failed' in result).toBe(false);
+        if (!('failed' in result)) expect(result.status).toBe(302);
+        expect(seen).toEqual(['/']);
+        expect(client.requests).toBe(1);
+      },
+    );
   });
 
   it('parses CSP and cookies', () => {

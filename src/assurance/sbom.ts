@@ -17,7 +17,16 @@ export interface CycloneDxBom {
   components: SbomComponent[];
 }
 
-const SKIP = new Set(['.git', 'node_modules', 'vendor', 'dist', 'build', '.venv', 'venv', 'coverage']);
+const SKIP = new Set([
+  '.git',
+  'node_modules',
+  'vendor',
+  'dist',
+  'build',
+  '.venv',
+  'venv',
+  'coverage',
+]);
 const MAX_FILES = 20_000;
 const MAX_BYTES = 4_000_000;
 
@@ -27,9 +36,26 @@ function add(out: Map<string, SbomComponent>, type: string, name: string, versio
   if (!name || !version || /^(?:\*|latest|x)$/i.test(version)) return;
   const key = `${type}:${name.toLowerCase()}@${version}`;
   if (out.has(key)) return;
-  const purlType = ({ pypi: 'pypi', golang: 'golang', cargo: 'cargo', gem: 'gem', nuget: 'nuget', composer: 'composer', maven: 'maven', npm: 'npm' } as Record<string, string>)[type] ?? 'generic';
+  const purlType =
+    (
+      {
+        pypi: 'pypi',
+        golang: 'golang',
+        cargo: 'cargo',
+        gem: 'gem',
+        nuget: 'nuget',
+        composer: 'composer',
+        maven: 'maven',
+        npm: 'npm',
+      } as Record<string, string>
+    )[type] ?? 'generic';
   const encoded = encodeURIComponent(name).replace(/%2F/gi, '/');
-  out.set(key, { type: 'library', name, version, purl: `pkg:${purlType}/${encoded}@${encodeURIComponent(version)}` });
+  out.set(key, {
+    type: 'library',
+    name,
+    version,
+    purl: `pkg:${purlType}/${encoded}@${encodeURIComponent(version)}`,
+  });
 }
 
 async function filesUnder(root: string): Promise<string[]> {
@@ -38,7 +64,11 @@ async function filesUnder(root: string): Promise<string[]> {
   while (queue.length && found.length < MAX_FILES) {
     const current = queue.shift()!;
     let entries;
-    try { entries = await readdir(current.dir, { withFileTypes: true }); } catch { continue; }
+    try {
+      entries = await readdir(current.dir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
     for (const entry of entries) {
       if (entry.isSymbolicLink()) continue;
       const absolute = path.join(current.dir, entry.name);
@@ -57,7 +87,9 @@ async function readSmall(root: string, relative: string): Promise<string | null>
   try {
     const data = await readFile(path.join(root, relative));
     return data.length <= MAX_BYTES ? data.toString('utf8') : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 function parseNpm(text: string, out: Map<string, SbomComponent>): void {
@@ -70,13 +102,16 @@ function parseNpm(text: string, out: Map<string, SbomComponent>): void {
 }
 function parsePython(text: string, out: Map<string, SbomComponent>): void {
   for (const line of text.split(/\r?\n/)) {
-    const m = /^\s*([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]+\])?\s*==\s*([\w.+-]+)/.exec(line.replace(/\s+#.*$/, ''));
+    const m = /^\s*([A-Za-z0-9][A-Za-z0-9._-]*)(?:\[[^\]]+\])?\s*==\s*([\w.+-]+)/.exec(
+      line.replace(/\s+#.*$/, ''),
+    );
     if (m?.[1] && m[2]) add(out, 'pypi', m[1], m[2]);
   }
 }
 function parseGo(text: string, out: Map<string, SbomComponent>): void {
   for (const m of text.matchAll(/^\s*(?:require\s+)?([^\s()]+)\s+(v\d[^\s]+)(?:\s+\/\/.*)?$/gm)) {
-    if (m[1] && m[2] && !['module', 'go', 'toolchain'].includes(m[1])) add(out, 'golang', m[1], m[2]);
+    if (m[1] && m[2] && !['module', 'go', 'toolchain'].includes(m[1]))
+      add(out, 'golang', m[1], m[2]);
   }
 }
 function parseCargo(text: string, out: Map<string, SbomComponent>): void {
@@ -95,7 +130,10 @@ function parseGem(text: string, out: Map<string, SbomComponent>): void {
   }
 }
 function parseComposer(text: string, out: Map<string, SbomComponent>): void {
-  const json = JSON.parse(text) as { packages?: Array<{ name?: string; version?: string }>; 'packages-dev'?: Array<{ name?: string; version?: string }> };
+  const json = JSON.parse(text) as {
+    packages?: Array<{ name?: string; version?: string }>;
+    'packages-dev'?: Array<{ name?: string; version?: string }>;
+  };
   for (const item of [...(json.packages ?? []), ...(json['packages-dev'] ?? [])]) {
     if (item.name && item.version) add(out, 'composer', item.name, item.version.replace(/^v/, ''));
   }
@@ -110,13 +148,18 @@ function parseMaven(text: string, out: Map<string, SbomComponent>): void {
   }
 }
 function parseNugetLock(text: string, out: Map<string, SbomComponent>): void {
-  const json = JSON.parse(text) as { dependencies?: Record<string, Record<string, { resolved?: string }>> };
+  const json = JSON.parse(text) as {
+    dependencies?: Record<string, Record<string, { resolved?: string }>>;
+  };
   for (const framework of Object.values(json.dependencies ?? {})) {
-    for (const [name, item] of Object.entries(framework)) if (item.resolved) add(out, 'nuget', name, item.resolved);
+    for (const [name, item] of Object.entries(framework))
+      if (item.resolved) add(out, 'nuget', name, item.resolved);
   }
 }
 function parseNugetConfig(text: string, out: Map<string, SbomComponent>): void {
-  for (const m of text.matchAll(/<package\b[^>]*\bid=["']([^"']+)["'][^>]*\bversion=["']([^"']+)["'][^>]*\/?\s*>/gi)) {
+  for (const m of text.matchAll(
+    /<package\b[^>]*\bid=["']([^"']+)["'][^>]*\bversion=["']([^"']+)["'][^>]*\/?\s*>/gi,
+  )) {
     if (m[1] && m[2]) add(out, 'nuget', m[1], m[2]);
   }
 }
@@ -141,14 +184,21 @@ export async function buildCycloneDx(root: string): Promise<CycloneDxBom> {
     if (!parser) continue;
     const text = await readSmall(absolute, file);
     if (text === null) continue;
-    try { parser(text, out); } catch { /* Skip malformed manifests; retain other results. */ }
+    try {
+      parser(text, out);
+    } catch {
+      /* Skip malformed manifests; retain other results. */
+    }
   }
   return {
     bomFormat: 'CycloneDX',
     specVersion: '1.5',
     serialNumber: `urn:uuid:${randomUUID()}`,
     version: 1,
-    metadata: { timestamp: new Date().toISOString(), tools: [{ vendor: 'Kinga', name: 'Kinga', version: '0.1.0' }] },
+    metadata: {
+      timestamp: new Date().toISOString(),
+      tools: [{ vendor: 'Kinga', name: 'Kinga', version: '0.1.0' }],
+    },
     components: [...out.values()].sort((a, b) => a.purl.localeCompare(b.purl)),
   };
 }
