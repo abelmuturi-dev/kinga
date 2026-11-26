@@ -14,3 +14,5 @@ export { rephraseWithLocalModel } from './local-model.js';
 export { auditApiContract, type ApiContractReport, type ApiContractIssue } from './api-contract.js';
 
 export { scanGitHistory, inspectGitPatch, type GitHistorySecretReport, type GitSecretFinding } from './git-history.js';
+
+export { previewSafeRemediation, type RemediationPreview } from './remediation.js';
