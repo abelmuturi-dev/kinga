@@ -1153,8 +1153,7 @@ export const CODE_TOPICS: TopicMap = {
     effort: 'hours',
     summary:
       'Trace untrusted input to the sensitive operation and validate or encode it for that exact context.',
-    why:
-      'A value originating from a request, URL or command-line argument can become dangerous when it reaches a shell, query or HTML sink without context-appropriate protection.',
+    why: 'A value originating from a request, URL or command-line argument can become dangerous when it reaches a shell, query or HTML sink without context-appropriate protection.',
     steps: [
       'Confirm the source and sink in the application context; AST taint results are review candidates, not proof.',
       'Prefer parameterized database queries and argument arrays rather than shell command strings.',
