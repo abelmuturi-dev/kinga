@@ -1,4 +1,7 @@
 import { homedir } from 'node:os';
+import { CODE_RULES } from '../scanners/code/rules.js';
+import { evaluateBenchmark } from '../benchmark/metrics.js';
+import { runRuleFixtureBenchmark, RULE_FIXTURES } from '../benchmark/fixtures.js';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { Context } from '../context.js';
@@ -23,8 +26,31 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   const [action, ...rest] = args;
   if (!action)
     throw new UsageError(
-      'Usage: kinga assurance <sbom|osv|dns|js|api|git-secrets|fix-preview|compare|compliance|history|rephrase> ...',
+      'Usage: kinga assurance <benchmark|sbom|osv|dns|js|api|git-secrets|fix-preview|compare|compliance|history|rephrase> ...',
     );
+  if (action === 'benchmark') {
+    const cases = runRuleFixtureBenchmark();
+    const metrics = evaluateBenchmark(
+      cases,
+      CODE_RULES.map((rule) => rule.id),
+    );
+    ctx.print(
+      JSON.stringify(
+        {
+          benchmark: 'kinga-rule-fixtures',
+          type: 'synthetic-regression-fixtures',
+          fixtureCount: RULE_FIXTURES.length,
+          ruleCount: CODE_RULES.length,
+          metrics,
+          limitations:
+            'Synthetic fixtures authored alongside the rules; not an independent OWASP Juice Shop/DVWA evaluation.',
+        },
+        null,
+        2,
+      ),
+    );
+    return 0;
+  }
   if (action === 'sbom') {
     const root = path.resolve(ctx.cwd, rest[0] ?? '.');
     const output = rest[1] ? path.resolve(ctx.cwd, rest[1]) : path.join(ctx.cwd, 'bom.json');
@@ -281,6 +307,6 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   throw new UsageError(
-    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, git-secrets, fix-preview, compare, compliance, history or rephrase.`,
+    `Unknown assurance action "${action}". Use benchmark, sbom, osv, dns, js, api, git-secrets, fix-preview, compare, compliance, history or rephrase.`,
   );
 }
