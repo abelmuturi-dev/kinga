@@ -67,9 +67,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   if (action === 'git-secrets') {
     const maxIndex = rest.indexOf('--max-commits');
     if (maxIndex >= 0 && !rest[maxIndex + 1]) {
-      throw new UsageError(
-        'Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>]',
-      );
+      throw new UsageError('Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>');
     }
     const directory =
       rest.find(
@@ -89,11 +87,8 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   if (action === 'api') {
-    if (!rest[0]) {
-      throw new UsageError(
-        'Usage: kinga assurance api <openapi.json> [output.json]',
-      );
-    }
+    if (!rest[0])
+      throw new UsageError('Usage: kinga assurance api <openapi.json> [output.json]');
     const input = path.resolve(ctx.cwd, rest[0]);
     const stat = await fs.stat(input).catch(() => null);
     if (!stat?.isFile()) throw new UserError(`Not an API contract file: ${input}`);
