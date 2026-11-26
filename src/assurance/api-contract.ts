@@ -97,10 +97,10 @@ export function auditApiContract(document: unknown): ApiContractReport {
       add(
         issues,
         'API-SERVER-001',
-        'medium',
+        'info',
         'servers',
-        'No server URL is declared.',
-        'Declare the intended API base URL and keep environment-specific URLs outside production contracts.',
+        'No explicit server URL is declared; OpenAPI uses the relative default server "/".',
+        'Declare the production server explicitly when the contract should be self-contained.',
       );
     }
 
