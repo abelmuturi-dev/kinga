@@ -125,7 +125,7 @@ function parseGem(text: string, out: Map<string, SbomComponent>): void {
   const start = text.indexOf('  specs:');
   if (start < 0) return;
   for (const line of text.slice(start).split(/\r?\n/)) {
-    const m = /^    ([A-Za-z0-9_.-]+) \(([^()]+)\)/.exec(line);
+    const m = /^ {4}([A-Za-z0-9_.-]+) \(([^()]+)\)/.exec(line);
     if (m?.[1] && m[2]) add(out, 'gem', m[1], m[2]);
   }
 }
