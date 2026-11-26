@@ -67,7 +67,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   if (action === 'git-secrets') {
     const maxIndex = rest.indexOf('--max-commits');
     if (maxIndex >= 0 && !rest[maxIndex + 1]) {
-      throw new UsageError('Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>');
+      throw new UsageError('Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>]');
     }
     const directory =
       rest.find(
