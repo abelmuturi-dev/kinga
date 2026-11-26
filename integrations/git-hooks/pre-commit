@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+if ! command -v kinga >/dev/null 2>&1; then
+  echo "Kinga is not installed or is not on PATH; skipping the security pre-commit check." >&2
+  exit 2
+fi
+
+kinga code . --fail-on high
