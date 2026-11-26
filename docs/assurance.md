@@ -33,7 +33,7 @@ queries use exact versions from CycloneDX package URLs; unknown formats are not 
 
 DNS checks are passive. DKIM lookup checks common selectors only. Unresolved CNAME targets are
 takeover signals, not proof of claimability; no provider claim or exploit attempt is performed.
-JavaScript analysis is bounded pattern inspection, not full deobfuscation or secret validation. API contract analysis accepts JSON only and is static; it does not probe endpoints or prove runtime authorization. Git history scanning examines bounded added-line patches from reachable local commits, does not fetch remotes or validate tokens, and may miss secrets that do not match its patterns.
+JavaScript analysis is bounded pattern inspection, not full deobfuscation or secret validation. The JavaScript/TypeScript taint pass is AST-based but intraprocedural and heuristic; it does not prove exploitability. Git history scanning examines bounded added-line patches from reachable local commits, does not fetch remotes or validate tokens, and may miss secrets that do not match its patterns. API contract auditing is static JSON analysis; optional API probes request GET operations only and require explicit authorization. GraphQL checks send one read-only introspection query and require explicit authorization. Safe remediation previews support only a narrow set of mechanical fixes and never modify source files.
 
 Compliance mappings are indicative evidence pointers, not audit conclusions, certifications or legal
 advice. Organizations must validate applicability and control versions with their auditor.
@@ -41,3 +41,12 @@ advice. Organizations must validate applicability and control versions with thei
 Scan comparison depends on fingerprint stability. It is a trend aid, not a replacement for review.
 The optional local advisor uses Ollama at the fixed loopback endpoint
 `http://127.0.0.1:11434`, receives curated advice only, and cannot change the finding or original fix.
+
+
+## Additional upgrade modules
+
+- [Authenticated web scanning](authenticated-scanning.md): explicit Authorization/Cookie headers scoped to one exact origin.
+- [API contract auditing](api-contract.md) and [authorized API probes](api-probe.md): static checks plus bounded GET-only runtime review.
+- [GraphQL endpoint audit](graphql-audit.md): one read-only introspection query, no mutations or redirects.
+- [Benchmark methodology](benchmark-methodology.md): reproducible synthetic rule fixtures; not an independent OWASP evaluation.
+- [Developer integrations](developer-integrations.md): watch mode, an opt-in pre-commit hook and a minimal VS Code extension.
