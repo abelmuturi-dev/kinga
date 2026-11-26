@@ -24,7 +24,7 @@ export interface GraphqlAuditOptions {
 }
 
 const INTROSPECTION_QUERY =
-  'query KingaSchemaExposure { __schema { queryType { name } mutationType { name } types { name kind } } }';
+  'query KingaSchemaExposure { __schema { queryType { name } types { name kind } } }';
 
 /**
  * Sends one read-only GraphQL introspection query. It never sends mutations and
