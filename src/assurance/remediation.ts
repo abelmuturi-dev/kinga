@@ -38,7 +38,9 @@ export function previewSafeRemediation(
     const updated = [...new Set(rel[2]!.split(/\s+/).filter(Boolean).concat('noopener'))].join(' ');
     replacement = tag.replace(rel[0], `rel=${rel[1]}${updated}${rel[1]}`);
   } else {
-    replacement = tag.replace(/\s*\/>$/, ' rel="noopener noreferrer"/>').replace(/>$/, ' rel="noopener noreferrer">');
+    replacement = tag.endsWith('/>')
+      ? tag.replace(/\s*\/>$/, ' rel="noopener noreferrer"/>')
+      : tag.replace(/>$/, ' rel="noopener noreferrer">');
   }
   const updatedLine = original.replace(tag, replacement);
   if (updatedLine === original) return null;
