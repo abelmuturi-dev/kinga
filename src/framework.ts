@@ -39,7 +39,7 @@ export interface ScanRequest {
 export const NOT_ASSESSED: readonly string[] = [
   'Business-logic flaws and broken access control between users (needs an understanding of what each user may do)',
   'Anything behind a login: web scans only see what an anonymous visitor sees',
-  'Whether pattern matches in code are reachable with attacker-controlled data (no data-flow analysis)',
+  'Interprocedural and path-sensitive data flow (the AST taint pass is conservative and intraprocedural)',
   'Vulnerabilities in dependency versions that are not in the bundled advisory snapshot (run npm audit / pip-audit / OSV-Scanner too)',
   'Network-level exposure, firewall rules and cloud account configuration (only IaC files are read)',
   'Denial-of-service resilience, race conditions and cryptographic protocol implementation bugs',
