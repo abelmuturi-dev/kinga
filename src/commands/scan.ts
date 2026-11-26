@@ -116,6 +116,53 @@ export async function runScanCommand(args: string[], ctx: Context, mode: Mode): 
   const maxPages = intFlag(values, 'max-pages', 1, 100);
   const delayMs = intFlag(values, 'delay', 0, 10_000);
   const timeoutMs = intFlag(values, 'timeout', 500, 120_000);
+  const authOriginRaw = ctx.env['KINGA_AUTH_ORIGIN'];
+  const authHeaderRaw = ctx.env['KINGA_AUTH_HEADER'];
+  const authValue = ctx.env['KINGA_AUTH_VALUE'];
+  const authConfigured = [authOriginRaw, authHeaderRaw, authValue].some(
+    (value) => value !== undefined,
+  );
+  let auth:
+    | { origin: string; headerName: 'authorization' | 'cookie'; headerValue: string }
+    | undefined;
+  if (authConfigured) {
+    if (!authOriginRaw || !authHeaderRaw || !authValue) {
+      throw new UsageError(
+        'Authenticated scanning needs KINGA_AUTH_ORIGIN, KINGA_AUTH_HEADER and KINGA_AUTH_VALUE.',
+      );
+    }
+    let authUrl: URL;
+    try {
+      authUrl = new URL(authOriginRaw);
+    } catch {
+      throw new UsageError('KINGA_AUTH_ORIGIN must be an absolute HTTP(S) origin.');
+    }
+    if (
+      !['http:', 'https:'].includes(authUrl.protocol) ||
+      authUrl.username ||
+      authUrl.password ||
+      authUrl.pathname !== '/' ||
+      authUrl.search ||
+      authUrl.hash
+    ) {
+      throw new UsageError('KINGA_AUTH_ORIGIN must contain only an HTTP(S) origin.');
+    }
+    const headerName = authHeaderRaw.toLowerCase();
+    if (headerName !== 'authorization' && headerName !== 'cookie') {
+      throw new UsageError('KINGA_AUTH_HEADER must be Authorization or Cookie.');
+    }
+    if (/[\\r\\n]/.test(authValue) || authValue.length > 8192) {
+      throw new UsageError('KINGA_AUTH_VALUE contains invalid characters or exceeds 8 KB.');
+    }
+    if (web.length === 0) {
+      throw new UsageError('Authenticated scanning is available only for web targets.');
+    }
+    auth = {
+      origin: authUrl.origin,
+      headerName,
+      headerValue: authValue,
+    };
+  }
 
   if (web.length > 0) {
     ctx.printErr(
@@ -134,6 +181,7 @@ export async function runScanCommand(args: string[], ctx: Context, mode: Mode): 
       level,
       authorized: flag(values, 'authorized'),
       insecure: flag(values, 'insecure'),
+      ...(auth ? { auth } : {}),
       ...(maxRequests !== undefined ? { maxRequests } : {}),
       ...(maxPages !== undefined ? { maxPages } : {}),
       ...(delayMs !== undefined ? { delayMs } : {}),
