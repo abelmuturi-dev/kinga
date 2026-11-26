@@ -97,6 +97,28 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
         origins.delete(node.left.text);
       }
     }
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isPropertyAccessExpression(node.left) &&
+      ['innerHTML', 'outerHTML'].includes(node.left.name.text) &&
+      expressionIsTainted(node.right)
+    ) {
+      const location = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+      const key = `dom:${location}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        flows.push({
+          rule: 'CODE-TAINT-001',
+          severity: 'medium',
+          confidence: 'low',
+          source: 'request-derived value (tracked expression)',
+          sink: node.left.name.text,
+          line: location,
+          evidence: `AST flow candidate from untrusted input to ${node.left.name.text}; review output encoding and sanitization.`,
+        });
+      }
+    }
     if (ts.isCallExpression(node)) {
       const sink = sinkDescription(node, source);
       const taintedArgument = node.arguments.find(expressionIsTainted);
