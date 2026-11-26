@@ -1,3 +1,5 @@
+import { isIP } from 'node:net';
+
 export interface ApiProbeResult {
   method: 'GET';
   path: string;
@@ -63,6 +65,15 @@ export async function probeApiReadOperations(
   }
   if (options.auth && options.auth.origin !== base.origin) {
     throw new Error('API credentials must be scoped to the exact base URL origin.');
+  }
+  const local =
+    base.hostname === 'localhost' ||
+    base.hostname.endsWith('.localhost') ||
+    (isIP(base.hostname.replace(/^\[|\]$/g, '')) === 4 &&
+      base.hostname.startsWith('127.')) ||
+    base.hostname.replace(/^\[|\]$/g, '') === '::1';
+  if (options.auth && base.protocol !== 'https:' && !local) {
+    throw new Error('Credentials are never sent to remote HTTP API targets; use HTTPS.');
   }
   const max = options.maxOperations ?? 20;
   if (!Number.isInteger(max) || max < 1 || max > 20) {
