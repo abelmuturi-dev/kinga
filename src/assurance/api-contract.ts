@@ -18,7 +18,17 @@ export interface ApiContractReport {
 }
 
 type JsonObject = Record<string, unknown>;
-const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'] as const;
+
+const METHODS = [
+  'get',
+  'put',
+  'post',
+  'delete',
+  'options',
+  'head',
+  'patch',
+  'trace',
+] as const;
 
 function object(value: unknown): JsonObject | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -27,13 +37,20 @@ function object(value: unknown): JsonObject | null {
 }
 
 function strings(value: unknown): string[] {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : [];
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
 }
 
 function isLocalServer(hostname: string): boolean {
   const host = hostname.toLowerCase().replace(/^\[|\]$/g, '');
-  return host === 'localhost' || host === '::1' || host === '127.0.0.1' ||
-    host.endsWith('.localhost') || /^127\./.test(host);
+  return (
+    host === 'localhost' ||
+    host === '::1' ||
+    host === '127.0.0.1' ||
+    host.endsWith('.localhost') ||
+    /^127\./.test(host)
+  );
 }
 
 function add(
@@ -59,6 +76,7 @@ export function auditApiContract(document: unknown): ApiContractReport {
   const swagger = typeof root.swagger === 'string' ? root.swagger : '';
   const isOpenApi = /^3\.(0|1)(\.\d+)?$/.test(openapi);
   const isSwagger = swagger === '2.0';
+
   if (!isOpenApi && !isSwagger) {
     throw new Error('Only OpenAPI 3.0/3.1 and Swagger 2.0 JSON documents are supported.');
   }
@@ -76,62 +94,166 @@ export function auditApiContract(document: unknown): ApiContractReport {
   if (isOpenApi) {
     const servers = Array.isArray(root.servers) ? root.servers : [];
     if (servers.length === 0) {
-      add(issues, 'API-SERVER-001', 'medium', 'servers', 'No server URL is declared.', 'Declare the intended API base URL and keep environment-specific URLs outside production contracts.');
+      add(
+        issues,
+        'API-SERVER-001',
+        'medium',
+        'servers',
+        'No server URL is declared.',
+        'Declare the intended API base URL and keep environment-specific URLs outside production contracts.',
+      );
     }
+
     servers.forEach((entry, index) => {
       const server = object(entry);
       const raw = typeof server?.url === 'string' ? server.url : '';
       if (!raw) {
-        add(issues, 'API-SERVER-002', 'medium', `servers[${index}]`, 'Server entry has no URL.', 'Provide a valid absolute server URL.');
+        add(
+          issues,
+          'API-SERVER-002',
+          'medium',
+          `servers[${index}]`,
+          'Server entry has no URL.',
+          'Provide a valid absolute server URL.',
+        );
         return;
       }
+
       const candidate = raw.replace(/\{([^}]+)\}/g, (_match, name: string) => {
         const variables = object(server?.variables);
         const variable = object(variables?.[name]);
         return typeof variable?.default === 'string' ? variable.default : 'placeholder';
       });
+
       try {
         const url = new URL(candidate);
         if (url.protocol === 'http:' && !isLocalServer(url.hostname)) {
-          add(issues, 'API-SERVER-003', 'high', `servers[${index}]`, 'API server uses cleartext HTTP.', 'Use HTTPS for non-local API environments to protect credentials and request data in transit.');
+          add(
+            issues,
+            'API-SERVER-003',
+            'high',
+            `servers[${index}]`,
+            'API server uses cleartext HTTP.',
+            'Use HTTPS for non-local API environments to protect credentials and request data in transit.',
+          );
         } else if (!['http:', 'https:'].includes(url.protocol)) {
-          add(issues, 'API-SERVER-004', 'medium', `servers[${index}]`, 'API server uses an unsupported URL scheme.', 'Use an HTTPS URL, or HTTP only for an explicitly local development server.');
+          add(
+            issues,
+            'API-SERVER-004',
+            'medium',
+            `servers[${index}]`,
+            'API server uses an unsupported URL scheme.',
+            'Use an HTTPS URL, or HTTP only for an explicitly local development server.',
+          );
         }
       } catch {
-        add(issues, 'API-SERVER-005', 'medium', `servers[${index}]`, 'API server URL is not a valid absolute URL.', 'Use a valid absolute URL and define defaults for all server variables.');
+        add(
+          issues,
+          'API-SERVER-005',
+          'medium',
+          `servers[${index}]`,
+          'API server URL is not a valid absolute URL.',
+          'Use a valid absolute URL and define defaults for all server variables.',
+        );
       }
     });
   } else {
     const declaredSchemes = strings(root.schemes);
     if (declaredSchemes.includes('http') && !declaredSchemes.includes('https')) {
-      add(issues, 'API-SERVER-003', 'high', 'schemes', 'Swagger contract advertises only cleartext HTTP.', 'Advertise HTTPS for non-local API environments.');
+      add(
+        issues,
+        'API-SERVER-003',
+        'high',
+        'schemes',
+        'Swagger contract advertises only cleartext HTTP.',
+        'Advertise HTTPS for non-local API environments.',
+      );
     } else if (declaredSchemes.includes('http') && declaredSchemes.includes('https')) {
-      add(issues, 'API-SERVER-006', 'medium', 'schemes', 'Swagger contract permits cleartext HTTP as well as HTTPS.', 'Remove HTTP from production schemes; keep insecure transport limited to local development.');
+      add(
+        issues,
+        'API-SERVER-006',
+        'medium',
+        'schemes',
+        'Swagger contract permits cleartext HTTP as well as HTTPS.',
+        'Remove HTTP from production schemes; keep insecure transport limited to local development.',
+      );
     }
   }
 
   if (Object.keys(schemes).length === 0) {
-    add(issues, 'API-AUTH-001', 'medium', isOpenApi ? 'components.securitySchemes' : 'securityDefinitions', 'No authentication schemes are declared.', 'Declare the authentication mechanisms used by the API and apply them globally or per operation where appropriate.');
+    add(
+      issues,
+      'API-AUTH-001',
+      'medium',
+      isOpenApi ? 'components.securitySchemes' : 'securityDefinitions',
+      'No authentication schemes are declared.',
+      'Declare the authentication mechanisms used by the API and apply them globally or per operation where appropriate.',
+    );
+  }
+
+  for (const [name, rawScheme] of Object.entries(schemes)) {
+    const scheme = object(rawScheme);
+    if (scheme?.type === 'apiKey' && scheme.in === 'query') {
+      add(
+        issues,
+        'API-AUTH-005',
+        'medium',
+        `securitySchemes.${name}`,
+        'API key is configured in the query string.',
+        'Prefer an authorization header; query strings are commonly copied into logs, browser history and monitoring systems.',
+      );
+    }
+    if (scheme?.type === 'http' && scheme.scheme === 'basic') {
+      add(
+        issues,
+        'API-AUTH-006',
+        'medium',
+        `securitySchemes.${name}`,
+        'HTTP Basic authentication is declared.',
+        'Prefer short-lived bearer tokens or another modern authentication mechanism, and require HTTPS everywhere.',
+      );
+    }
   }
 
   for (const [pathName, rawPathItem] of Object.entries(paths)) {
     const pathItem = object(rawPathItem);
     if (!pathItem) continue;
+
     for (const method of METHODS) {
       const operation = object(pathItem[method]);
       if (!operation) continue;
+
       operations++;
       const location = `${method.toUpperCase()} ${pathName}`;
-      const operationId = typeof operation.operationId === 'string' ? operation.operationId.trim() : '';
+      const operationId =
+        typeof operation.operationId === 'string' ? operation.operationId.trim() : '';
+
       if (!operationId) {
-        add(issues, 'API-DOC-001', 'low', location, 'Operation has no operationId.', 'Add a unique, stable operationId to improve client generation and API traceability.');
+        add(
+          issues,
+          'API-DOC-001',
+          'low',
+          location,
+          'Operation has no operationId.',
+          'Add a unique, stable operationId to improve client generation and API traceability.',
+        );
       } else if (seenOperationIds.has(operationId)) {
-        add(issues, 'API-DOC-002', 'medium', location, `Duplicate operationId "${operationId}".`, 'Give every operation a unique operationId.');
+        add(
+          issues,
+          'API-DOC-002',
+          'medium',
+          location,
+          `Duplicate operationId "${operationId}".`,
+          'Give every operation a unique operationId.',
+        );
       } else {
         seenOperationIds.add(operationId);
       }
 
-      const effectiveSecurity = Array.isArray(operation.security) ? operation.security : globalSecurity;
+      const effectiveSecurity = Array.isArray(operation.security)
+        ? operation.security
+        : globalSecurity;
+
       if (!effectiveSecurity || effectiveSecurity.length === 0) {
         publicOperations++;
         const mutating = ['put', 'post', 'patch', 'delete'].includes(method);
@@ -152,7 +274,14 @@ export function auditApiContract(document: unknown): ApiContractReport {
           if (!requirementObject) continue;
           for (const schemeName of Object.keys(requirementObject)) {
             if (!(schemeName in schemes)) {
-              add(issues, 'API-AUTH-004', 'high', location, `Security requirement references undefined scheme "${schemeName}".`, 'Define the referenced security scheme or correct the requirement name.');
+              add(
+                issues,
+                'API-AUTH-004',
+                'high',
+                location,
+                `Security requirement references undefined scheme "${schemeName}".`,
+                'Define the referenced security scheme or correct the requirement name.',
+              );
             }
           }
         }
@@ -161,7 +290,14 @@ export function auditApiContract(document: unknown): ApiContractReport {
   }
 
   if (operations === 0) {
-    add(issues, 'API-DOC-003', 'medium', 'paths', 'No API operations were found.', 'Check that the contract contains a populated paths object.');
+    add(
+      issues,
+      'API-DOC-003',
+      'medium',
+      'paths',
+      'No API operations were found.',
+      'Check that the contract contains a populated paths object.',
+    );
   }
 
   return {
