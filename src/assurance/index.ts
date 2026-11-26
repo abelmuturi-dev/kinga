@@ -16,3 +16,5 @@ export { auditApiContract, type ApiContractReport, type ApiContractIssue } from 
 export { scanGitHistory, inspectGitPatch, type GitHistorySecretReport, type GitSecretFinding } from './git-history.js';
 
 export { previewSafeRemediation, type RemediationPreview } from './remediation.js';
+
+export { auditGraphqlEndpoint, type GraphqlAuditReport } from './graphql.js';
