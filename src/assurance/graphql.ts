@@ -1,3 +1,5 @@
+import { isIP } from 'node:net';
+
 export interface GraphqlIssue {
   id: string;
   severity: 'medium' | 'info';
