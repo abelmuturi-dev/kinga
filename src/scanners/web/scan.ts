@@ -1,4 +1,5 @@
 import { randomBytes } from 'node:crypto';
+import { isIP } from 'node:net';
 import { BRAND } from '../../brand.js';
 import { UserError } from '../../errors.js';
 import type { RawFinding, TargetSummary } from '../../core/types.js';
@@ -87,11 +88,17 @@ export async function runWebScan(
 ): Promise<WebScanOutput> {
   const target = normalizeTarget(targetInput);
   const local = isLocalHost(target.hostname);
-  if (options.auth && !options.authorized && !local) {
-    throw new UserError('Authenticated scanning requires --authorized for non-local targets.');
+  if (options.auth && !options.authorized) {
+    throw new UserError('Authenticated scanning always requires explicit --authorized confirmation.');
   }
-  if (options.auth && target.protocol !== 'https:' && !local) {
-    throw new UserError('Credentials are never sent to remote HTTP targets; use HTTPS.');
+  const loopback =
+    target.hostname === 'localhost' ||
+    target.hostname.endsWith('.localhost') ||
+    (isIP(target.hostname.replace(/^\\[|\\]$/g, '')) === 4 &&
+      target.hostname.startsWith('127.')) ||
+    target.hostname.replace(/^\\[|\\]$/g, '') === '::1';
+  if (options.auth && target.protocol !== 'https:' && !loopback) {
+    throw new UserError('Credentials are never sent to non-loopback HTTP targets; use HTTPS.');
   }
   const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
   if (options.level === 'active' && !local && !options.authorized) {
