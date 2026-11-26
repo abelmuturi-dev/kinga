@@ -7,14 +7,21 @@ inspection, compliance mapping, scan comparison and optional local-only advisor 
 ## Commands
 
 - `kinga assurance sbom [project] [output.json]`: generate CycloneDX 1.5 from recognized manifests and lockfiles.
-- `kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]`: check exact SBOM package versions against OSV. Network use is explicit; offline mode reads the local cache only.
+- `kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]`: check exact SBOM package
+  versions against OSV. Network use is explicit; offline mode reads the local cache only.
 - `kinga assurance dns <domain>`: inspect MX, SPF, DMARC, common DKIM selectors and common subdomain CNAME signals.
-- `kinga assurance js <asset.js>`: inspect a local JavaScript bundle for token-shaped values and source-map references. Values are not printed.
-- `kinga assurance api <openapi.json> [output.json]`: statically audit OpenAPI 3.0/3.1 and Swagger 2.0 JSON contracts for transport, authentication and operation-documentation issues. See [API contract audit](api-contract.md).
-- `kinga assurance git-secrets [directory] [--max-commits <1-5000>]`: inspect recent local Git history for common credential patterns without printing secret values or contacting remotes. See [Git history secret scan](git-history.md).
+- `kinga assurance js <asset.js>`: inspect a local JavaScript bundle for token-shaped values and
+  source-map references. Values are not printed.
+- `kinga assurance api <openapi.json> [output.json]`: statically audit OpenAPI 3.0/3.1 and Swagger
+  2.0 JSON contracts for transport, authentication and operation-documentation issues. See [API
+  contract audit](api-contract.md).
+- `kinga assurance git-secrets [directory] [--max-commits <1-5000>]`: inspect recent local Git
+  history for common credential patterns without printing secret values or contacting remotes. See
+  [Git history secret scan](git-history.md).
 - `kinga assurance compare <previous.json> <current.json>`: compare findings by fingerprint.
 - `kinga assurance compliance <scan.json> [output.json]`: generate indicative control mappings.
-- `kinga assurance history <scan.json>`: save a scan snapshot under `~/.kinga/history`; use `history list` or `history compare` to review trends.
+- `kinga assurance history <scan.json>`: save a scan snapshot under `~/.kinga/history`; use
+  `history list` or `history compare` to review trends.
 - `kinga assurance rephrase <scan.json> <finding-index> <ollama-model>`: optionally rephrase curated advice through Ollama on loopback.
 
 ## Scope and limitations
