@@ -12,8 +12,7 @@ export interface TaintFlow {
 
 const SOURCE =
   /(?:req\.(?:body|query|params|headers|cookies)|request\.(?:args|form|values|json|GET|POST|data|query_params|body)|\$_(?:GET|POST|REQUEST|COOKIE|FILES)|process\.argv|URLSearchParams|searchParams\.get|location\.(?:search|hash))/;
-const SINK_CALL =
-  /^(?:eval|exec|execSync|execFile|spawn|query|execute|raw|writeFile|readFile)$/;
+const SINK_CALL = /^(?:eval|exec|execSync|execFile|spawn|query|execute|raw|writeFile|readFile)$/;
 
 function nodeText(node: ts.Node, source: ts.SourceFile): string {
   return node.getText(source).slice(0, 240);
@@ -33,8 +32,7 @@ function sinkDescription(node: ts.CallExpression, source: ts.SourceFile): string
     const receiver = nodeText(expression.expression, source);
     if (
       ['query', 'execute', 'raw', 'writeFile', 'readFile'].includes(method) ||
-      (['exec', 'execSync', 'execFile', 'spawn'].includes(method) &&
-        /child_process/.test(receiver))
+      (['exec', 'execSync', 'execFile', 'spawn'].includes(method) && /child_process/.test(receiver))
     ) {
       return method;
     }
