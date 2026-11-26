@@ -125,8 +125,20 @@ export function auditApiContract(document: unknown): ApiContractReport {
         return typeof variable?.default === 'string' ? variable.default : 'placeholder';
       });
 
+      if (!/^[a-z][a-z0-9+.-]*:/i.test(candidate)) return;
+
       try {
         const url = new URL(candidate);
+        if (url.username || url.password) {
+          add(
+            issues,
+            'API-SERVER-008',
+            'high',
+            `servers[${index}]`,
+            'API server URL contains embedded credentials.',
+            'Remove credentials from server URLs and use the documented authentication mechanism instead.',
+          );
+        }
         if (url.protocol === 'http:' && !isLocalServer(url.hostname)) {
           add(
             issues,
@@ -254,7 +266,12 @@ export function auditApiContract(document: unknown): ApiContractReport {
         ? operation.security
         : globalSecurity;
 
-      if (!effectiveSecurity || effectiveSecurity.length === 0) {
+      const allowsAnonymous = effectiveSecurity?.some((requirement) => {
+        const requirementObject = object(requirement);
+        return requirementObject !== null && Object.keys(requirementObject).length === 0;
+      }) ?? false;
+
+      if (!effectiveSecurity || effectiveSecurity.length === 0 || allowsAnonymous) {
         publicOperations++;
         const mutating = ['put', 'post', 'patch', 'delete'].includes(method);
         add(
@@ -262,9 +279,11 @@ export function auditApiContract(document: unknown): ApiContractReport {
           mutating ? 'API-AUTH-002' : 'API-AUTH-003',
           mutating ? 'high' : 'medium',
           location,
-          mutating
-            ? 'State-changing operation is explicitly or implicitly public.'
-            : 'Operation has no declared authentication requirement.',
+          allowsAnonymous
+            ? 'Security requirements include an anonymous-access alternative.'
+            : mutating
+              ? 'State-changing operation is explicitly or implicitly public.'
+              : 'Operation has no declared authentication requirement.',
           'If the operation is intended to be public, document that decision and enforce authorization rules server-side. Otherwise attach an appropriate security requirement.',
         );
       } else {
