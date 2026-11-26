@@ -1,6 +1,12 @@
-import { createServer } from 'node:http';
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
 import { auditGraphqlEndpoint } from '../src/assurance/graphql.js';
+
+type Handler = (req: IncomingMessage, res: ServerResponse) => void;
 
 const servers: Array<ReturnType<typeof createServer>> = [];
 
@@ -12,7 +18,7 @@ afterEach(async () => {
   );
 });
 
-async function serve(handler: Parameters<typeof createServer>[0]): Promise<string> {
+async function serve(handler: Handler): Promise<string> {
   const server = createServer(handler);
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
@@ -26,7 +32,7 @@ describe('GraphQL endpoint audit', () => {
     let requestBody = '';
     const endpoint = await serve((req, res) => {
       req.setEncoding('utf8');
-      req.on('data', (chunk) => (requestBody += chunk));
+      req.on('data', (chunk: string) => (requestBody += chunk));
       req.on('end', () => {
         res.writeHead(200, { 'content-type': 'application/json' });
         res.end(JSON.stringify({ data: { __schema: { queryType: { name: 'Query' } } } }));
