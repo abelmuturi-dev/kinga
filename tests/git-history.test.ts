@@ -19,8 +19,8 @@ describe('Git history secret inspection', () => {
     expect(findings.map((finding) => finding.kind)).toEqual(
       expect.arrayContaining(['aws-access-key', 'generic-secret']),
     );
-    expect(JSON.stringify(findings)).not.toContain('AKIAABCDEFGHIJKLMNOP');
-    expect(JSON.stringify(findings)).not.toContain('correct-horse-battery-staple-123');
+    expect(JSON.stringify(findings)).not.toContain('AKIA' + 'ABCDEFGHIJKLMNOP');
+    expect(JSON.stringify(findings)).not.toContain('correct-horse-' + 'battery-staple-123');
   });
 
   it('ignores deleted lines and detects private-key markers', () => {
