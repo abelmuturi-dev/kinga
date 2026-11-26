@@ -14,6 +14,7 @@ import {
   rephraseWithLocalModel,
   saveScanHistory,
   scanGitHistory,
+  previewSafeRemediation,
   scanBomWithOsv,
   writeCycloneDx,
 } from '../assurance/index.js';
@@ -22,7 +23,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   const [action, ...rest] = args;
   if (!action)
     throw new UsageError(
-      'Usage: kinga assurance <sbom|osv|dns|js|api|git-secrets|compare|compliance|history|rephrase> ...',
+      'Usage: kinga assurance <sbom|osv|dns|js|api|git-secrets|fix-preview|compare|compliance|history|rephrase> ...',
     );
   if (action === 'sbom') {
     const root = path.resolve(ctx.cwd, rest[0] ?? '.');
@@ -114,6 +115,56 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
       ctx.print(`API contract report written to ${rest[1]} (${report.issues.length} issues).`);
     } else {
       ctx.print(json);
+    }
+    return 0;
+  }
+  if (action === 'fix-preview') {
+    if (!rest[0] || rest[1] === undefined) {
+      throw new UsageError(
+        'Usage: kinga assurance fix-preview <scan.json> <finding-index> [output.patch]',
+      );
+    }
+    const result = await loadScanResult(path.resolve(ctx.cwd, rest[0]));
+    const index = Number(rest[1]);
+    const finding = result.findings[index];
+    if (!Number.isInteger(index) || !finding) {
+      throw new UsageError('Finding index is out of range.');
+    }
+    if (!finding.line || !finding.target || finding.domain === 'web') {
+      throw new UserError('This finding has no supported source-file location.');
+    }
+    const sourcePath = path.resolve(ctx.cwd, finding.target);
+    const relative = path.relative(ctx.cwd, sourcePath);
+    if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
+      throw new UserError('Refusing to preview a patch outside the current project directory.');
+    }
+    const stat = await fs.stat(sourcePath).catch(() => null);
+    if (!stat?.isFile() || stat.size > 2_000_000) {
+      throw new UserError('Source file is missing or exceeds the 2 MB preview limit.');
+    }
+    const source = await fs.readFile(sourcePath, 'utf8');
+    const preview = previewSafeRemediation(
+      finding.rule,
+      finding.target,
+      source,
+      finding.line,
+    );
+    if (!preview) {
+      throw new UserError(
+        'No safe automatic preview is available for this rule or source line. Apply a manual fix using the finding guidance.',
+      );
+    }
+    if (rest[2]) {
+      const output = path.resolve(ctx.cwd, rest[2]);
+      await fs.writeFile(output, `${preview.patch}\n`, {
+        encoding: 'utf8',
+        mode: 0o600,
+        flag: 'wx',
+      });
+      ctx.print(`Review-only patch written to ${output}; source files were not changed.`);
+    } else {
+      ctx.print(preview.patch);
+      ctx.print(ctx.style.dim('Preview only. Kinga did not modify the source file.'));
     }
     return 0;
   }
@@ -230,6 +281,6 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   throw new UsageError(
-    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, git-secrets, compare, compliance, history or rephrase.`,
+    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, git-secrets, fix-preview, compare, compliance, history or rephrase.`,
   );
 }
