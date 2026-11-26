@@ -76,7 +76,7 @@ export function inspectGitPatch(patch: string): GitHistorySecretReport['findings
       const added = line.slice(1);
       for (const [kind, severity, pattern] of PATTERNS) {
         if (!pattern.test(added)) continue;
-        const key = `${commit}| ${file}|${lineNumber}|${kind}`;
+        const key = `${commit}|${file}|${lineNumber}|${kind}`;
         if (seen.has(key)) continue;
         seen.add(key);
         findings.push({
