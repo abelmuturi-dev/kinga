@@ -39,6 +39,19 @@ describe('GraphQL endpoint audit', () => {
     expect(requestBody.toLowerCase()).not.toContain('mutation');
   });
 
+  it('refuses credentials over remote cleartext HTTP', async () => {
+    await expect(
+      auditGraphqlEndpoint('http://api.example.test/graphql', {
+        authorized: true,
+        auth: {
+          origin: 'http://api.example.test',
+          headerName: 'authorization',
+          headerValue: 'Bearer test',
+        },
+      }),
+    ).rejects.toThrow(/HTTPS/);
+  });
+
   it('requires explicit authorization', async () => {
     await expect(
       auditGraphqlEndpoint('http://127.0.0.1:1/graphql', { authorized: false }),
