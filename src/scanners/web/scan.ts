@@ -90,6 +90,9 @@ export async function runWebScan(
   if (options.auth && !options.authorized && !local) {
     throw new UserError('Authenticated scanning requires --authorized for non-local targets.');
   }
+  if (options.auth && target.protocol !== 'https:' && !local) {
+    throw new UserError('Credentials are never sent to remote HTTP targets; use HTTPS.');
+  }
   const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
   if (options.level === 'active' && !local && !options.authorized) {
     throw new UserError(
