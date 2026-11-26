@@ -10,3 +10,5 @@ export { compareScanResults, saveScanHistory, loadScanResult, type ScanDelta } f
 export { inspectDns, type DnsPosture } from './dns.js';
 export { inspectJavaScriptAsset, type JavaScriptIndicator } from './javascript.js';
 export { rephraseWithLocalModel } from './local-model.js';
+
+export { auditApiContract, type ApiContractReport, type ApiContractIssue } from './api-contract.js';
