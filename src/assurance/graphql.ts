@@ -47,6 +47,15 @@ export async function auditGraphqlEndpoint(
     throw new Error('GraphQL endpoint must be HTTP(S) and must not contain URL credentials.');
   }
   if (endpoint.hash) throw new Error('GraphQL endpoint must not contain a URL fragment.');
+  const local =
+    endpoint.hostname === 'localhost' ||
+    endpoint.hostname.endsWith('.localhost') ||
+    (isIP(endpoint.hostname.replace(/^\[|\]$/g, '')) === 4 &&
+      endpoint.hostname.startsWith('127.')) ||
+    endpoint.hostname.replace(/^\[|\]$/g, '') === '::1';
+  if (options.auth && endpoint.protocol !== 'https:' && !local) {
+    throw new Error('Credentials are never sent to remote HTTP endpoints; use HTTPS.');
+  }
   if (options.auth && options.auth.origin !== endpoint.origin) {
     throw new Error('GraphQL credentials are only accepted for the exact endpoint origin.');
   }
