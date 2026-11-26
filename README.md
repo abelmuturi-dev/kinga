@@ -62,7 +62,7 @@ csrf-token-missing  (CWE-352)
 
 ## Install
 
-Requires Node.js 20+.
+Requires Node.js 22.12+.
 
 ```bash
 npm install
@@ -154,7 +154,7 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
+[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [API contract audit](docs/api-contract.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
 
 ## License
 
@@ -164,13 +164,14 @@ Apache-2.0. Kinga is derived from [Mia Code](https://github.com/MiaCodeAI/Mia-Co
 ## Assurance commands
 
 Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV (online by
-explicit command or offline from cache), inspect DNS/email posture, inspect local JavaScript
-assets, compare scan JSON reports, create indicative compliance mappings, save local scan history
-and optionally rephrase curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
+explicit command or offline from cache), inspect DNS/email posture and local JavaScript assets,
+audit OpenAPI 3.x / Swagger 2.0 JSON contracts, compare scan reports, create indicative compliance
+mappings, save local scan history and optionally rephrase curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
 
 ```bash
 kinga assurance sbom . bom.json
 kinga assurance osv bom.json --offline
 kinga assurance dns example.com
+kinga assurance api openapi.json
 kinga assurance compare previous.json current.json
 ```
