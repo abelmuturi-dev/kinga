@@ -7,12 +7,12 @@ local-only advisor rephrasing.
 ## Commands
 
 - `kinga assurance sbom [project] [output.json]`: generate CycloneDX 1.5 from recognized manifests and lockfiles.
-- `kinga assurance osv <bom.json> [--offline] [cache.json]`: check exact SBOM package versions against OSV. Network use is explicit; offline mode reads the local cache only.
+- `kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]`: check exact SBOM package versions against OSV. Network use is explicit; offline mode reads the local cache only.
 - `kinga assurance dns <domain>`: inspect MX, SPF, DMARC, common DKIM selectors and common subdomain CNAME signals.
 - `kinga assurance js <asset.js>`: inspect a local JavaScript bundle for token-shaped values and source-map references. Values are not printed.
 - `kinga assurance compare <previous.json> <current.json>`: compare findings by fingerprint.
 - `kinga assurance compliance <scan.json> [output.json]`: generate indicative control mappings.
-- `kinga assurance history <scan.json>`: save a scan snapshot under `~/.kinga/history`.
+- `kinga assurance history <scan.json>`: save a scan snapshot under `~/.kinga/history`; use `history list` or `history compare` to review trends.
 - `kinga assurance rephrase <scan.json> <finding-index> <ollama-model>`: optionally rephrase curated advice through Ollama on loopback.
 
 ## Scope and limitations

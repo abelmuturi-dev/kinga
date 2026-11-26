@@ -43,18 +43,20 @@ export async function scanBomWithOsv(
   bom: CycloneDxBom,
   cacheFile: string,
   offline = false,
+  refresh = false,
 ): Promise<{
   checked: number;
   vulnerabilities: Array<{ package: string; version: string; id: string; summary: string }>;
   cacheUpdated: boolean;
   notes: string[];
 }> {
+  if (offline && refresh) throw new Error('Choose either --offline or --refresh, not both.');
   const packages = packagesFromBom(bom);
   const cache = await readOsvCache(cacheFile);
   const key = (pkg: OsvPackage): string =>
     `${pkg.ecosystem.toLowerCase()}:${pkg.name.toLowerCase()}@${pkg.version}`;
   const entries = new Map((cache?.entries ?? []).map((entry) => [key(entry), entry]));
-  const missing = packages.filter((pkg) => !entries.has(key(pkg)));
+  const missing = refresh ? packages : packages.filter((pkg) => !entries.has(key(pkg)));
   const notes: string[] = [];
   let cacheUpdated = false;
   if (offline && missing.length)

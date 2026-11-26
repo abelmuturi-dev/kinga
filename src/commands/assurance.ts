@@ -34,10 +34,11 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   }
   if (action === 'osv') {
     if (!rest[0])
-      throw new UsageError('Usage: kinga assurance osv <bom.json> [--offline] [cache.json]');
+      throw new UsageError('Usage: kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]');
     const input = path.resolve(ctx.cwd, rest[0]);
     const offline = rest.includes('--offline');
-    const cacheArg = rest.find((item) => item !== '--offline' && item !== rest[0]);
+    const refresh = rest.includes('--refresh');
+    const cacheArg = rest.find((item) => !['--offline', '--refresh', rest[0]].includes(item));
     const cache = path.resolve(
       ctx.cwd,
       cacheArg ?? path.join(homedir(), '.kinga', 'osv-cache.json'),
@@ -45,7 +46,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     const bom = JSON.parse(await fs.readFile(input, 'utf8'));
     if (bom.bomFormat !== 'CycloneDX' || !Array.isArray(bom.components))
       throw new UserError('Input must be a CycloneDX BOM.');
-    ctx.print(JSON.stringify(await scanBomWithOsv(bom, cache, offline), null, 2));
+    ctx.print(JSON.stringify(await scanBomWithOsv(bom, cache, offline, refresh), null, 2));
     return 0;
   }
   if (action === 'dns') {
@@ -104,9 +105,36 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   if (action === 'history') {
-    if (!rest[0]) throw new UsageError('Usage: kinga assurance history <scan.json>');
+    const directory = path.join(homedir(), '.kinga', 'history');
+    if (rest[0] === 'list') {
+      const names = (await fs.readdir(directory).catch(() => []))
+        .filter((name) => name.endsWith('.json'))
+        .sort()
+        .reverse();
+      ctx.print(names.length ? names.join(' | ') : 'No local scan history yet.');
+      return 0;
+    }
+    if (rest[0] === 'compare') {
+      const names = (await fs.readdir(directory).catch(() => []))
+        .filter((name) => name.endsWith('.json'))
+        .sort()
+        .reverse();
+      if (names.length < 2) throw new UserError('At least two saved scans are needed for a history comparison.');
+      const current = await loadScanResult(path.join(directory, names[0]!));
+      const previous = await loadScanResult(path.join(directory, names[1]!));
+      const delta = compareScanResults(previous, current);
+      ctx.print(JSON.stringify({
+        previousFindings: delta.previousCount,
+        currentFindings: delta.currentCount,
+        added: delta.added.length,
+        resolved: delta.resolved.length,
+        persisting: delta.persisting.length,
+      }, null, 2));
+      return 0;
+    }
+    if (!rest[0]) throw new UsageError('Usage: kinga assurance history <scan.json|list|compare>');
     const result = await loadScanResult(path.resolve(ctx.cwd, rest[0]));
-    const file = await saveScanHistory(path.join(homedir(), '.kinga', 'history'), result);
+    const file = await saveScanHistory(directory, result);
     ctx.print(`Local scan snapshot saved to ${file}.`);
     return 0;
   }
