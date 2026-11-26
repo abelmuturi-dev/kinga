@@ -151,7 +151,7 @@ export async function runScanCommand(args: string[], ctx: Context, mode: Mode): 
     if (headerName !== 'authorization' && headerName !== 'cookie') {
       throw new UsageError('KINGA_AUTH_HEADER must be Authorization or Cookie.');
     }
-    if (/[\\r\\n]/.test(authValue) || authValue.length > 8192) {
+    if (/[\r\n]/.test(authValue) || authValue.length > 8192) {
       throw new UsageError('KINGA_AUTH_VALUE contains invalid characters or exceeds 8 KB.');
     }
     if (web.length === 0) {
