@@ -12,6 +12,8 @@ export interface HttpOptions {
   /** Skip certificate verification (set automatically after a certificate error is recorded). */
   insecure: boolean;
   sleep: (ms: number) => Promise<void>;
+  /** Optional credential header, sent only to this exact origin. */
+  auth?: { origin: string; headerName: 'authorization' | 'cookie'; headerValue: string };
 }
 
 export interface Hop {
@@ -187,6 +189,9 @@ export class HttpClient {
             'accept-encoding': 'identity',
             connection: 'close',
             ...headers,
+            ...(this.options.auth && parsed.origin === this.options.auth.origin
+              ? { [this.options.auth.headerName]: this.options.auth.headerValue }
+              : {}),
           },
           rejectUnauthorized: !this.options.insecure,
           timeout: this.options.timeoutMs,
