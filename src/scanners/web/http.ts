@@ -131,6 +131,11 @@ export class HttpClient {
         } catch {
           return finish(once, url, hops, started);
         }
+        if (!isAllowedRedirect(current, next)) {
+          // Return the redirect response without following a cross-origin or downgrade hop.
+          // This prevents a target from redirecting Kinga to an unrelated/internal service.
+          return finish(once, url, hops, started);
+        }
         hops.push({ from: current, to: next, status: once.status });
         current = next;
         continue;
@@ -244,6 +249,35 @@ export class HttpClient {
       req.end();
     });
   }
+}
+
+/**
+ * Redirects stay on the original hostname. HTTP->HTTPS upgrades are allowed, but HTTPS
+ * downgrades, credential-bearing URLs, non-web schemes and cross-host redirects are not.
+ * This is a conservative default for a scanner that may be pointed at untrusted websites.
+ */
+export function isAllowedRedirect(from: string, to: string): boolean {
+  let source: URL;
+  let destination: URL;
+  try {
+    source = new URL(from);
+    destination = new URL(to);
+  } catch {
+    return false;
+  }
+  if (!['http:', 'https:'].includes(destination.protocol)) return false;
+  if (destination.username || destination.password) return false;
+  if (source.hostname.toLowerCase() !== destination.hostname.toLowerCase()) return false;
+  if (source.protocol === 'https:' && destination.protocol !== 'https:') return false;
+
+  const sourcePort = source.port || (source.protocol === 'https:' ? '443' : '80');
+  const destinationPort = destination.port || (destination.protocol === 'https:' ? '443' : '80');
+  const standardUpgrade =
+    source.protocol === 'http:' &&
+    destination.protocol === 'https:' &&
+    sourcePort === '80' &&
+    destinationPort === '443';
+  return sourcePort === destinationPort || standardUpgrade;
 }
 
 function finish(last: Snapshot, original: string, hops: Hop[], started: number): Snapshot {

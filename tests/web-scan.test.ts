@@ -5,6 +5,7 @@ import { runCommand } from '../src/platform/exec.js';
 import { normalizeTarget } from '../src/scanners/web/scan.js';
 import { parseCsp } from '../src/scanners/web/checks/headers.js';
 import { parseSetCookie } from '../src/scanners/web/checks/cookies.js';
+import { HttpClient, isAllowedRedirect } from '../src/scanners/web/http.js';
 import { withServer, type Handler } from './helpers/server.js';
 
 const base = {
@@ -124,6 +125,37 @@ describe('web helpers', () => {
     expect(() => normalizeTarget('ftp://x')).toThrow();
     expect(() => normalizeTarget('https://u:p@x.com')).toThrow(/credentials/);
   });
+  it('blocks cross-host redirects and HTTPS downgrades', () => {
+    expect(isAllowedRedirect('https://example.com/a', 'https://attacker.test/b')).toBe(false);
+    expect(isAllowedRedirect('https://example.com/a', 'http://example.com/b')).toBe(false);
+    expect(isAllowedRedirect('http://example.com/a', 'https://example.com/b')).toBe(true);
+    expect(isAllowedRedirect('http://example.com:8080/a', 'http://example.com:9090/b')).toBe(false);
+  });
+
+  it('does not follow a cross-host redirect', async () => {
+    const seen: string[] = [];
+    await withServer((req, res) => {
+      seen.push(req.url ?? '');
+      res.writeHead(302, { location: 'http://example.invalid/redirect-target' });
+      res.end();
+    }, async (url) => {
+      const client = new HttpClient({
+        timeoutMs: 1000,
+        maxBodyBytes: 1024,
+        delayMs: 0,
+        maxRequests: 5,
+        userAgent: 'Kinga-test',
+        insecure: false,
+        sleep: async () => undefined,
+      });
+      const result = await client.request(url);
+      expect('failed' in result).toBe(false);
+      if (!('failed' in result)) expect(result.status).toBe(302);
+      expect(seen).toEqual(['/']);
+      expect(client.requests).toBe(1);
+    });
+  });
+
   it('parses CSP and cookies', () => {
     expect(parseCsp("default-src 'self'; script-src 'unsafe-inline'").get('script-src')).toEqual([
       "'unsafe-inline'",
