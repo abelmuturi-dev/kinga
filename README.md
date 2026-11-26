@@ -160,3 +160,19 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 Apache-2.0. Kinga is derived from [Mia Code](https://github.com/MiaCodeAI/Mia-Code); see
 [NOTICE](NOTICE).
+
+ 
+## Assurance commands
+
+Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV (online by
+explicit command or offline from cache), inspect DNS/email posture, inspect local JavaScript
+assets, compare scan JSON reports, create indicative compliance mappings, save local scan history
+and optionally rephrase curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
+
+```bash
+kinga assurance sbom . bom.json
+kinga assurance osv bom.json --offline
+kinga assurance dns example.com
+kinga assurance compare previous.json current.json
+```
+

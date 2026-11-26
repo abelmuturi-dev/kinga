@@ -15,7 +15,7 @@ New module: `src/intelligence/`
 
 ## Group 2 — Assurance and evidence module
 
-New module: `src/benchmark/`
+New module: `src/assurance/`\n\nThe benchmark metrics module lives in `src/benchmark/` and supplies evaluation support for this group.
 
 7. Expanded dependency ecosystems and CycloneDX SBOM output.
 8. Advanced web checks: DNS/email posture, subdomain takeover signals and JS bundle/source-map review.

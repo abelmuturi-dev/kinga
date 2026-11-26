@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateBenchmark } from '../src/benchmark/metrics.js';
+import { runRuleFixtureBenchmark, RULE_FIXTURES } from '../src/benchmark/fixtures.js';
+import { CODE_RULES } from '../src/scanners/code/rules.js';
 
 describe('benchmark metrics', () => {
   it('calculates precision, recall and F1 from expected and actual rule IDs', () => {
@@ -22,5 +24,15 @@ describe('benchmark metrics', () => {
       { id: 'same', expectedRules: [], actualRules: [] },
       { id: 'same', expectedRules: [], actualRules: [] },
     ])).toThrow(/Duplicate/);
+  });
+
+  it('runs positive and negative fixtures against the real Kinga regex rule set', () => {
+    const cases = runRuleFixtureBenchmark();
+    const metrics = evaluateBenchmark(cases, CODE_RULES.map((rule) => rule.id));
+    expect(cases).toHaveLength(RULE_FIXTURES.length);
+    expect(metrics.falsePositives).toBe(0);
+    expect(metrics.falseNegatives).toBe(0);
+    expect(metrics.precision).toBe(1);
+    expect(metrics.recall).toBe(1);
   });
 });

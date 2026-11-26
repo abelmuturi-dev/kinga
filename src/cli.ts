@@ -2,7 +2,7 @@
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { BRAND } from './brand.js';
-import { askCommand, explainCommand, topicsCommand } from './commands/explain.js';
+import { askCommand, explainCommand, topicsCommand } from './commands/explain.js';\nimport { assuranceCommand } from './commands/assurance.js';
 import {
   baselineCommand,
   codeCommand,
@@ -25,7 +25,7 @@ const COMMANDS: Record<string, Handler> = {
   explain: explainCommand,
   topics: topicsCommand,
   baseline: baselineCommand,
-  init: initCommand,
+  init: initCommand,\n  assurance: assuranceCommand,
 };
 
 /** Runs the CLI and returns the process exit code. Never calls process.exit itself. */

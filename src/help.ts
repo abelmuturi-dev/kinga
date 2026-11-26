@@ -13,6 +13,7 @@ Usage
   ${C} explain <topic>       Show the full fix guidance for a topic
   ${C} topics                List the topics the advisor knows
   ${C} baseline [dir]        Record current findings so later scans show only new ones
+  ${C} assurance <action>    SBOM, OSV, DNS, compliance and scan comparison
   ${C} init                  Create ${BRAND.configFile}
   ${C} help [command]        Help
   ${C} --version
@@ -44,13 +45,14 @@ Only scan systems you own or are authorised to test.`;
 }
 
 const TOPIC_HELP: Record<string, string> = {
-  scan: `${C} scan [target...] [options]\n\nTargets that start with http(s):// or look like a host are scanned as websites; existing folders are scanned as code. With no target, the current folder is scanned.\nSee \`${C} help\` for options.`,
-  web: `${C} web <url> [--level passive|active] [--authorized]\n\nPassive (default): fetches the page, robots.txt and security.txt, inspects TLS, headers, cookies, forms and scripts.\nActive: also sends CORS/OPTIONS probes, a small crawl, checks for exposed files such as /.env and /.git, and tests legacy TLS versions. Requires --authorized for non-local hosts.\nRequests identify themselves as ${BRAND.name} and are rate limited. No request bodies are sent and nothing is exploited.`,
-  code: `${C} code [dir] [options]\n\nReads source, config, Docker/Kubernetes/Terraform files, CI workflows and dependency manifests. Never runs project code and never contacts the network. Suppress a line with a comment containing ${BRAND.ignoreMarker} (or ${BRAND.ignoreMarker}-next-line on the line before).`,
-  ask: `${C} ask "<question>"\n\nAnswers from the built-in knowledge base, offline. Mention your stack (Django, Express, nginx, Spring…) to get matching examples.`,
-  explain: `${C} explain <topic>\n\nPrints the full guidance for one topic id (see \`${C} topics\`). Anything else is treated as a question.`,
-  baseline: `${C} baseline [dir]\n\nSaves fingerprints of current findings. Set "baseline" in ${BRAND.configFile}; later scans hide those findings and report only new ones.`,
-  init: `${C} init\n\nWrites a starter ${BRAND.configFile}.`,
+  scan: `${C} scan [target...] [options]\\n\\nTargets are auto-detected as URLs or folders. With no target, the current folder is scanned.`,
+  web: `${C} web <url> [--level passive|active] [--authorized]\\n\\nPassive scanning is the default. Active scans send extra probes and require authorization for non-local targets.`,
+  code: `${C} code [dir] [options]\\n\\nReads source, configuration, infrastructure and dependency files. It never executes project code.`,
+  ask: `${C} ask "<question>"\\n\\nAnswers from the built-in knowledge base, offline.`,
+  explain: `${C} explain <topic>\\n\\nShows full guidance for a knowledge-base topic.`,
+  baseline: `${C} baseline [dir]\\n\\nSaves fingerprints of current findings for future comparisons.`,
+  assurance: `${C} assurance <sbom|osv|dns|js|compare|compliance|history|rephrase> ...\\n\\nGenerate SBOMs, check OSV, inspect DNS and JavaScript, compare scans, map compliance controls, save history or rephrase curated advice locally.`,
+  init: `${C} init\\n\\nWrites a starter ${BRAND.configFile}.`,
 };
 
 export function topicHelp(topic: string): string | undefined {
