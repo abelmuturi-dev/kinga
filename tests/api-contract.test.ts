@@ -88,7 +88,7 @@ describe('OpenAPI contract audit', () => {
         '/write': {
           post: {
             operationId: 'write',
-            security: [{ bearerAuth: [] }, {}],
+            security: [{ bearerAuth: [] }, { missing: [] }, {}],
             responses: {},
           },
         },
@@ -101,6 +101,7 @@ describe('OpenAPI contract audit', () => {
         issue.message.includes('anonymous-access alternative'),
       ),
     ).toBe(true);
+    expect(report.issues.some((issue) => issue.id === 'API-AUTH-004')).toBe(true);
     expect(report.issues.some((issue) => issue.id === 'API-SERVER-005')).toBe(false);
   });
 
