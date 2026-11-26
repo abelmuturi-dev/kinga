@@ -87,7 +87,8 @@ export async function probeApiReadOperations(
 
   const results: ApiProbeResult[] = [];
   const issues: ApiProbeReport['issues'] = [];
-  for (const operation of operations) {
+  for (const [operationIndex, operation] of operations.entries()) {
+    if (operationIndex > 0) await new Promise((resolve) => setTimeout(resolve, 150));
     const path = operation.path.replace(/\{[^}]+\}/g, 'kinga-probe');
     const url = new URL(path.replace(/^\//, ''), base.toString().endsWith('/') ? base : `${base.toString()}/`);
     if (url.origin !== base.origin) {
@@ -115,6 +116,7 @@ export async function probeApiReadOperations(
         signal: controller.signal,
       });
       const redirected = response.status >= 300 && response.status < 400;
+      await response.body?.cancel();
       results.push({
         method: 'GET',
         path: operation.path,
