@@ -96,39 +96,11 @@ describe('OpenAPI contract audit', () => {
     });
 
     expect(report.publicOperations).toBe(1);
-    expect(report.issues.some((issue) => issue.message.includes('anonymous-access'))).toBe(
-      false,
-    );
-    expect(report.issues.some((issue) => issue.message.includes('anonymous-access alternative'))).toBe(
-      true,
-    );
-    expect(report.issues.some((issue) => issue.id === 'API-SERVER-005')).toBe(false);
-  });
-
-  it('detects anonymous alternatives in security requirements', () => {
-    const report = auditApiContract({
-      openapi: '3.1.0',
-      servers: [{ url: '/v1' }],
-      components: {
-        securitySchemes: {
-          bearerAuth: { type: 'http', scheme: 'bearer' },
-        },
-      },
-      paths: {
-        '/write': {
-          post: {
-            operationId: 'write',
-            security: [{ bearerAuth: [] }, {}],
-            responses: {},
-          },
-        },
-      },
-    });
-
-    expect(report.publicOperations).toBe(1);
-    expect(report.issues.some((issue) => issue.message.includes('anonymous-access alternative'))).toBe(
-      true,
-    );
+    expect(
+      report.issues.some((issue) =>
+        issue.message.includes('anonymous-access alternative'),
+      ),
+    ).toBe(true);
     expect(report.issues.some((issue) => issue.id === 'API-SERVER-005')).toBe(false);
   });
 
