@@ -13,8 +13,9 @@ kinga scan . https://example.com -f html -o report.html   # both, as a shareable
 kinga ask "how do I stop SQL injection in Django?"        # ask the built-in advisor
 ```
 
-Kinga has **no external AI service, no API keys and no account**. Everything, including the
-advisor, runs on your machine. Code scans never touch the network.
+Kinga has **no required external AI service, API key or account**. The built-in advisor, code
+scans and Git history scans run locally. Network access is used for live website scans or when you
+explicitly request online vulnerability-intelligence updates.
 
 ## What it finds
 
