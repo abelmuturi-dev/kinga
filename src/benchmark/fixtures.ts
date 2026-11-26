@@ -13,6 +13,7 @@ export const RULE_FIXTURES: readonly RuleFixture[] = [
   {
     id: 'js-sql-interpolation',
     file: 'src/query.js',
+    // kinga-ignore-next-line
     line: 'db.query(`SELECT * FROM users WHERE id = ${input}`);',
     expectedRules: ['CODE-INJ-002'],
     tags: ['javascript', 'sql-injection', 'positive'],
@@ -27,6 +28,7 @@ export const RULE_FIXTURES: readonly RuleFixture[] = [
   {
     id: 'js-eval-input',
     file: 'src/app.js',
+    // kinga-ignore-next-line
     line: 'eval(userInput);',
     expectedRules: ['CODE-INJ-004'],
     tags: ['javascript', 'code-injection', 'positive'],
@@ -41,6 +43,7 @@ export const RULE_FIXTURES: readonly RuleFixture[] = [
   {
     id: 'python-exec',
     file: 'src/app.py',
+    // kinga-ignore-next-line
     line: 'exec(user_input)',
     expectedRules: ['CODE-INJ-007'],
     tags: ['python', 'code-injection', 'positive'],
@@ -55,6 +58,7 @@ export const RULE_FIXTURES: readonly RuleFixture[] = [
   {
     id: 'python-unsafe-yaml',
     file: 'src/config.py',
+    // kinga-ignore-next-line
     line: 'data = yaml.load(text)',
     expectedRules: ['CODE-DES-001'],
     tags: ['python', 'deserialization', 'positive'],
