@@ -4,6 +4,7 @@ import path from 'node:path';
 import type { Context } from '../context.js';
 import { UsageError, UserError } from '../errors.js';
 import {
+  auditApiContract,
   buildComplianceReport,
   buildCycloneDx,
   compareScanResults,
@@ -20,7 +21,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   const [action, ...rest] = args;
   if (!action)
     throw new UsageError(
-      'Usage: kinga assurance <sbom|osv|dns|js|compare|compliance|history|rephrase> ...',
+      'Usage: kinga assurance <sbom|osv|dns|js|api|compare|compliance|history|rephrase> ...',
     );
   if (action === 'sbom') {
     const root = path.resolve(ctx.cwd, rest[0] ?? '.');
@@ -60,6 +61,26 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     if (!rest[0]) throw new UsageError('Usage: kinga assurance js <javascript-file>');
     const source = await fs.readFile(path.resolve(ctx.cwd, rest[0]), 'utf8');
     ctx.print(JSON.stringify(inspectJavaScriptAsset(source), null, 2));
+    return 0;
+  }
+  if (action === 'api') {
+    if (!rest[0]) throw new UsageError('Usage: kinga assurance api <openapi.json> [output.json]');
+    const input = path.resolve(ctx.cwd, rest[0]);
+    const stat = await fs.stat(input).catch(() => null);
+    if (!stat?.isFile()) throw new UserError(`Not an API contract file: ${input}`);
+    if (stat.size > 5_000_000) throw new UserError('API contract exceeds the 5 MB safety limit.');
+    let document: unknown;
+    try {
+      document = JSON.parse(await fs.readFile(input, 'utf8'));
+    } catch (error) {
+      throw new UserError(`Could not parse API contract JSON: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    const report = auditApiContract(document);
+    const json = `${JSON.stringify(report, null, 2)}\\n`;
+    if (rest[1]) {
+      await fs.writeFile(path.resolve(ctx.cwd, rest[1]), json, { encoding: 'utf8', mode: 0o600 });
+      ctx.print(`API contract report written to ${rest[1]} (${report.issues.length} issues).`);
+    } else ctx.print(json);
     return 0;
   }
   if (action === 'compare') {
@@ -175,6 +196,6 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   throw new UsageError(
-    `Unknown assurance action "${action}". Use sbom, osv, dns, js, compare, compliance, history or rephrase.`,
+    `Unknown assurance action "${action}". Use sbom, osv, dns, js, api, compare, compliance, history or rephrase.`,
   );
 }
