@@ -1,6 +1,8 @@
-import { createServer } from 'node:http';
+import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { afterEach, describe, expect, it } from 'vitest';
 import { probeApiReadOperations } from '../src/assurance/api-probe.js';
+
+type Handler = (req: IncomingMessage, res: ServerResponse) => void;
 
 const servers: Array<ReturnType<typeof createServer>> = [];
 
@@ -12,7 +14,7 @@ afterEach(async () => {
   );
 });
 
-async function listen(handler: Parameters<typeof createServer>[0]): Promise<string> {
+async function listen(handler: Handler): Promise<string> {
   const server = createServer(handler);
   servers.push(server);
   await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
