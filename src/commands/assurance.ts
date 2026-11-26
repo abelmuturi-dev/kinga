@@ -8,6 +8,7 @@ import type { Context } from '../context.js';
 import { UsageError, UserError } from '../errors.js';
 import {
   auditApiContract,
+  auditGraphqlEndpoint,
   buildComplianceReport,
   buildCycloneDx,
   compareScanResults,
@@ -26,7 +27,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   const [action, ...rest] = args;
   if (!action)
     throw new UsageError(
-      'Usage: kinga assurance <benchmark|sbom|osv|dns|js|api|git-secrets|fix-preview|compare|compliance|history|rephrase> ...',
+      'Usage: kinga assurance <benchmark|sbom|osv|dns|js|api|graphql|git-secrets|fix-preview|compare|compliance|history|rephrase> ...',
     );
   if (action === 'benchmark') {
     const cases = runRuleFixtureBenchmark();
@@ -111,6 +112,61 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     } catch (error) {
       throw new UserError(error instanceof Error ? error.message : String(error));
     }
+    return 0;
+  }
+  if (action === 'graphql') {
+    if (!rest[0] || !rest.includes('--authorized')) {
+      throw new UsageError(
+        'Usage: kinga assurance graphql <endpoint> --authorized',
+      );
+    }
+    let auth:
+      | {
+          origin: string;
+          headerName: 'authorization' | 'cookie';
+          headerValue: string;
+        }
+      | undefined;
+    const authOrigin = ctx.env['KINGA_AUTH_ORIGIN'];
+    const authHeader = ctx.env['KINGA_AUTH_HEADER'];
+    const authValue = ctx.env['KINGA_AUTH_VALUE'];
+    if ([authOrigin, authHeader, authValue].some((value) => value !== undefined)) {
+      if (!authOrigin || !authHeader || !authValue) {
+        throw new UsageError(
+          'GraphQL authentication needs KINGA_AUTH_ORIGIN, KINGA_AUTH_HEADER and KINGA_AUTH_VALUE.',
+        );
+      }
+      let origin: URL;
+      try {
+        origin = new URL(authOrigin);
+      } catch {
+        throw new UsageError('KINGA_AUTH_ORIGIN must be an absolute HTTP(S) origin.');
+      }
+      const headerName = authHeader.toLowerCase();
+      if (
+        !['http:', 'https:'].includes(origin.protocol) ||
+        origin.username ||
+        origin.password ||
+        origin.pathname !== '/' ||
+        origin.search ||
+        origin.hash ||
+        (headerName !== 'authorization' && headerName !== 'cookie') ||
+        /[\\r\\n]/.test(authValue) ||
+        authValue.length > 8192
+      ) {
+        throw new UsageError('Invalid GraphQL authentication origin or header configuration.');
+      }
+      auth = {
+        origin: origin.origin,
+        headerName,
+        headerValue: authValue,
+      };
+    }
+    const report = await auditGraphqlEndpoint(rest[0], {
+      authorized: true,
+      ...(auth ? { auth } : {}),
+    });
+    ctx.print(JSON.stringify(report, null, 2));
     return 0;
   }
   if (action === 'api') {
@@ -307,6 +363,6 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   throw new UsageError(
-    `Unknown assurance action "${action}". Use benchmark, sbom, osv, dns, js, api, git-secrets, fix-preview, compare, compliance, history or rephrase.`,
+    `Unknown assurance action "${action}". Use benchmark, sbom, osv, dns, js, api, graphql, git-secrets, fix-preview, compare, compliance, history or rephrase.`,
   );
 }
