@@ -165,8 +165,9 @@ Apache-2.0. Kinga is derived from [Mia Code](https://github.com/MiaCodeAI/Mia-Co
 
 Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV (online by
 explicit command or offline from cache), inspect DNS/email posture and local JavaScript assets,
-audit OpenAPI 3.x / Swagger 2.0 JSON contracts, inspect local Git history for committed secrets, and compare scan reports, create indicative compliance
-mappings, save local scan history and optionally rephrase curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
+audit OpenAPI 3.x / Swagger 2.0 JSON contracts, inspect local Git history for committed secrets, and
+compare scan reports. It also creates indicative compliance mappings, saves local scan history, and
+optionally rephrases curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
 
 ```bash
 kinga assurance sbom . bom.json
