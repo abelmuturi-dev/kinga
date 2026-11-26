@@ -2,7 +2,8 @@
 import { realpathSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { BRAND } from './brand.js';
-import { askCommand, explainCommand, topicsCommand } from './commands/explain.js';\nimport { assuranceCommand } from './commands/assurance.js';
+import { askCommand, explainCommand, topicsCommand } from './commands/explain.js';
+import { assuranceCommand } from './commands/assurance.js';
 import {
   baselineCommand,
   codeCommand,
