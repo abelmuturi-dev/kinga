@@ -12,6 +12,7 @@ import { scanDependencies } from '../deps/scan.js';
 import type { AdvisoryDb } from '../deps/advisories.js';
 import { configFindings } from './config.js';
 import { CODE_RULES, type CodeRule } from './rules.js';
+import { analyseTaint } from './taint.js';
 
 export interface CodeScanOptions {
   maxFileBytes: number;
@@ -130,6 +131,37 @@ export async function runCodeScan(
             'Pattern match on the source line. The surrounding code was not executed or data-flow analysed, so confirm that attacker-controlled data really reaches this line.',
         });
       }
+    }
+  });
+
+  // AST-assisted, intraprocedural taint candidates for JavaScript and TypeScript.
+  // This supplements regex rules; it does not claim interprocedural proof.
+  await mapLimit(targets, 8, async (file) => {
+    if (!/\.(?:[cm]?[jt]sx?)$/i.test(file.path)) return;
+    let sourceText: string;
+    try {
+      sourceText = (await readTextFile(inventory.root, file.path, {
+        maxBytes: options.maxFileBytes,
+      })).text;
+    } catch {
+      return;
+    }
+    for (const flow of analyseTaint(sourceText, file.path)) {
+      findings.push({
+        rule: flow.rule,
+        kb: 'tainted-input',
+        title: `Potential untrusted input reaching ${flow.sink}`,
+        severity: flow.severity,
+        confidence: flow.confidence,
+        domain: 'code',
+        category: 'taint-analysis',
+        target: file.path,
+        line: flow.line,
+        evidence: flow.evidence,
+        verified: false,
+        verification:
+          'AST-based intraprocedural taint candidate. Review sanitization, validation and control flow; this analysis does not prove exploitability.',
+      });
     }
   });
 
