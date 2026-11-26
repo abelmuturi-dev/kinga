@@ -26,7 +26,8 @@ const COMMANDS: Record<string, Handler> = {
   explain: explainCommand,
   topics: topicsCommand,
   baseline: baselineCommand,
-  init: initCommand,\n  assurance: assuranceCommand,
+  init: initCommand,
+  assurance: assuranceCommand,
 };
 
 /** Runs the CLI and returns the process exit code. Never calls process.exit itself. */
