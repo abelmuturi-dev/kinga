@@ -19,16 +19,7 @@ export interface ApiContractReport {
 
 type JsonObject = Record<string, unknown>;
 
-const METHODS = [
-  'get',
-  'put',
-  'post',
-  'delete',
-  'options',
-  'head',
-  'patch',
-  'trace',
-] as const;
+const METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'] as const;
 
 function object(value: unknown): JsonObject | null {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -266,10 +257,11 @@ export function auditApiContract(document: unknown): ApiContractReport {
         ? operation.security
         : globalSecurity;
 
-      const allowsAnonymous = effectiveSecurity?.some((requirement) => {
-        const requirementObject = object(requirement);
-        return requirementObject !== null && Object.keys(requirementObject).length === 0;
-      }) ?? false;
+      const allowsAnonymous =
+        effectiveSecurity?.some((requirement) => {
+          const requirementObject = object(requirement);
+          return requirementObject !== null && Object.keys(requirementObject).length === 0;
+        }) ?? false;
 
       if (effectiveSecurity) {
         for (const requirement of effectiveSecurity) {

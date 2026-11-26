@@ -10,8 +10,10 @@ export interface TaintFlow {
   evidence: string;
 }
 
-const SOURCE = /(?:req\.(?:body|query|params|headers|cookies)|request\.(?:args|form|values|json|GET|POST|data|query_params|body)|\$_(?:GET|POST|REQUEST|COOKIE|FILES)|process\.argv|URLSearchParams|searchParams\.get|location\.(?:search|hash))/;
-const SINK_CALL = /^(?:eval|exec|execSync|execFile|spawn|query|execute|raw|innerHTML|outerHTML|write|writeFile|readFile|createElement)$/;
+const SOURCE =
+  /(?:req\.(?:body|query|params|headers|cookies)|request\.(?:args|form|values|json|GET|POST|data|query_params|body)|\$_(?:GET|POST|REQUEST|COOKIE|FILES)|process\.argv|URLSearchParams|searchParams\.get|location\.(?:search|hash))/;
+const SINK_CALL =
+  /^(?:eval|exec|execSync|execFile|spawn|query|execute|raw|innerHTML|outerHTML|write|writeFile|readFile|createElement)$/;
 function nodeText(node: ts.Node, source: ts.SourceFile): string {
   return node.getText(source).slice(0, 240);
 }
@@ -29,13 +31,26 @@ function sinkDescription(node: ts.CallExpression, source: ts.SourceFile): string
     const method = expression.name.text;
     const receiver = nodeText(expression.expression, source);
     if (
-      ['query', 'execute', 'raw', 'innerHTML', 'outerHTML', 'write', 'writeFile', 'readFile'].includes(method) ||
+      [
+        'query',
+        'execute',
+        'raw',
+        'innerHTML',
+        'outerHTML',
+        'write',
+        'writeFile',
+        'readFile',
+      ].includes(method) ||
       (['exec', 'execSync', 'execFile', 'spawn'].includes(method) && /child_process/.test(receiver))
     ) {
       return method;
     }
   }
-  if (ts.isNewExpression(expression) && ts.isIdentifier(expression.expression) && expression.expression.text === 'Function') {
+  if (
+    ts.isNewExpression(expression) &&
+    ts.isIdentifier(expression.expression) &&
+    expression.expression.text === 'Function'
+  ) {
     return 'Function constructor';
   }
   return null;
@@ -62,17 +77,24 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
     if (isSource(node, source)) return true;
     if (ts.isIdentifier(node)) return tainted.has(node.text);
     if (ts.isPropertyAccessExpression(node) || ts.isElementAccessExpression(node)) {
-      return expressionIsTainted(node.expression) ||
-        (ts.isElementAccessExpression(node) && node.argumentExpression !== undefined && expressionIsTainted(node.argumentExpression));
+      return (
+        expressionIsTainted(node.expression) ||
+        (ts.isElementAccessExpression(node) &&
+          node.argumentExpression !== undefined &&
+          expressionIsTainted(node.argumentExpression))
+      );
     }
-    if (ts.isBinaryExpression(node)) return expressionIsTainted(node.left) || expressionIsTainted(node.right);
-    if (ts.isTemplateExpression(node)) return node.templateSpans.some((span) => expressionIsTainted(span.expression));
+    if (ts.isBinaryExpression(node))
+      return expressionIsTainted(node.left) || expressionIsTainted(node.right);
+    if (ts.isTemplateExpression(node))
+      return node.templateSpans.some((span) => expressionIsTainted(span.expression));
     if (ts.isArrayLiteralExpression(node)) return node.elements.some(expressionIsTainted);
-    if (ts.isObjectLiteralExpression(node)) return node.properties.some((property) => {
-      if (ts.isPropertyAssignment(property)) return expressionIsTainted(property.initializer);
-      if (ts.isShorthandPropertyAssignment(property)) return tainted.has(property.name.text);
-      return false;
-    });
+    if (ts.isObjectLiteralExpression(node))
+      return node.properties.some((property) => {
+        if (ts.isPropertyAssignment(property)) return expressionIsTainted(property.initializer);
+        if (ts.isShorthandPropertyAssignment(property)) return tainted.has(property.name.text);
+        return false;
+      });
     if (
       ts.isBinaryExpression(node) &&
       node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
@@ -105,13 +127,27 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
     if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
       if (expressionIsTainted(node.initializer)) {
         tainted.add(node.name.text);
-        origins.set(node.name.text, isSource(node.initializer, source) ? nodeText(node.initializer, source) : origins.get(node.name.text) ?? 'tainted variable');
+        origins.set(
+          node.name.text,
+          isSource(node.initializer, source)
+            ? nodeText(node.initializer, source)
+            : (origins.get(node.name.text) ?? 'tainted variable'),
+        );
       }
     }
-    if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken && ts.isIdentifier(node.left)) {
+    if (
+      ts.isBinaryExpression(node) &&
+      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+      ts.isIdentifier(node.left)
+    ) {
       if (expressionIsTainted(node.right)) {
         tainted.add(node.left.text);
-        origins.set(node.left.text, isSource(node.right, source) ? nodeText(node.right, source) : origins.get(node.left.text) ?? 'tainted assignment');
+        origins.set(
+          node.left.text,
+          isSource(node.right, source)
+            ? nodeText(node.right, source)
+            : (origins.get(node.left.text) ?? 'tainted assignment'),
+        );
       } else {
         tainted.delete(node.left.text);
         origins.delete(node.left.text);
@@ -128,9 +164,13 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
           const direct = isSource(taintedArgument, source);
           flows.push({
             rule: 'CODE-TAINT-001',
-            severity: ['exec', 'execSync', 'spawn', 'eval', 'Function constructor'].includes(sink) ? 'high' : 'medium',
+            severity: ['exec', 'execSync', 'spawn', 'eval', 'Function constructor'].includes(sink)
+              ? 'high'
+              : 'medium',
             confidence: direct ? 'medium' : 'low',
-            source: direct ? nodeText(taintedArgument, source) : 'request-derived value (tracked identifier)',
+            source: direct
+              ? nodeText(taintedArgument, source)
+              : 'request-derived value (tracked identifier)',
             sink,
             line: location,
             evidence: `AST flow candidate from ${origins.get(taintedArgument.getText(source)) ?? 'untrusted input'} to ${sink}; review sanitization and validation.`,

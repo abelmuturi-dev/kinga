@@ -23,7 +23,14 @@ export interface ScanRequest {
   web: Partial<
     Pick<
       WebScanOptions,
-      'level' | 'authorized' | 'timeoutMs' | 'delayMs' | 'maxRequests' | 'maxPages' | 'insecure' | 'auth'
+      | 'level'
+      | 'authorized'
+      | 'timeoutMs'
+      | 'delayMs'
+      | 'maxRequests'
+      | 'maxPages'
+      | 'insecure'
+      | 'auth'
     >
   >;
   config: KingaConfig;

@@ -123,8 +123,7 @@ export async function runScanCommand(args: string[], ctx: Context, mode: Mode): 
     (value) => value !== undefined,
   );
   let auth:
-    | { origin: string; headerName: 'authorization' | 'cookie'; headerValue: string }
-    | undefined;
+    { origin: string; headerName: 'authorization' | 'cookie'; headerValue: string } | undefined;
   if (authConfigured) {
     if (!authOriginRaw || !authHeaderRaw || !authValue) {
       throw new UsageError(

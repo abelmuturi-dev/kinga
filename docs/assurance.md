@@ -42,7 +42,6 @@ Scan comparison depends on fingerprint stability. It is a trend aid, not a repla
 The optional local advisor uses Ollama at the fixed loopback endpoint
 `http://127.0.0.1:11434`, receives curated advice only, and cannot change the finding or original fix.
 
-
 ## Additional upgrade modules
 
 - [Authenticated web scanning](authenticated-scanning.md): explicit Authorization/Cookie headers scoped to one exact origin.

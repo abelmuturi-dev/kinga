@@ -6,10 +6,9 @@ const servers: Array<ReturnType<typeof createServer>> = [];
 
 afterEach(async () => {
   await Promise.all(
-    servers.splice(0).map(
-      (server) =>
-        new Promise<void>((resolve) => server.close(() => resolve())),
-    ),
+    servers
+      .splice(0)
+      .map((server) => new Promise<void>((resolve) => server.close(() => resolve()))),
   );
 });
 
@@ -21,7 +20,11 @@ async function listen(server: ReturnType<typeof createServer>): Promise<string> 
   return `http://127.0.0.1:${address.port}`;
 }
 
-function client(auth?: { origin: string; headerName: 'authorization' | 'cookie'; headerValue: string }) {
+function client(auth?: {
+  origin: string;
+  headerName: 'authorization' | 'cookie';
+  headerValue: string;
+}) {
   return new HttpClient({
     timeoutMs: 2000,
     maxBodyBytes: 1024,

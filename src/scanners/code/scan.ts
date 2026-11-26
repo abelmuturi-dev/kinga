@@ -141,12 +141,15 @@ export async function runCodeScan(
       !/\.(?:[cm]?[jt]sx?)$/i.test(file.path) ||
       isTestFile(file.path) ||
       isDocOrExample(file.path)
-    ) return;
+    )
+      return;
     let sourceText: string;
     try {
-      sourceText = (await readTextFile(inventory.root, file.path, {
-        maxBytes: options.maxFileBytes,
-      })).text;
+      sourceText = (
+        await readTextFile(inventory.root, file.path, {
+          maxBytes: options.maxFileBytes,
+        })
+      ).text;
     } catch {
       return;
     }

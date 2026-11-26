@@ -90,13 +90,14 @@ export async function runWebScan(
   const local = isLocalHost(target.hostname);
   const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
   if (scopedAuth && !options.authorized) {
-    throw new UserError('Authenticated scanning always requires explicit --authorized confirmation.');
+    throw new UserError(
+      'Authenticated scanning always requires explicit --authorized confirmation.',
+    );
   }
   const loopback =
     target.hostname === 'localhost' ||
     target.hostname.endsWith('.localhost') ||
-    (isIP(target.hostname.replace(/^\[|\]$/g, '')) === 4 &&
-      target.hostname.startsWith('127.')) ||
+    (isIP(target.hostname.replace(/^\[|\]$/g, '')) === 4 && target.hostname.startsWith('127.')) ||
     target.hostname.replace(/^\[|\]$/g, '') === '::1';
   if (scopedAuth && target.protocol !== 'https:' && !loopback) {
     throw new UserError('Credentials are never sent to non-loopback HTTP targets; use HTTPS.');

@@ -96,12 +96,13 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   if (action === 'git-secrets') {
     const maxIndex = rest.indexOf('--max-commits');
     if (maxIndex >= 0 && !rest[maxIndex + 1]) {
-      throw new UsageError('Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>]');
+      throw new UsageError(
+        'Usage: kinga assurance git-secrets [directory] [--max-commits <1-5000>]',
+      );
     }
     const directory =
       rest.find(
-        (item, index) =>
-          !item.startsWith('--') && !(maxIndex >= 0 && index === maxIndex + 1),
+        (item, index) => !item.startsWith('--') && !(maxIndex >= 0 && index === maxIndex + 1),
       ) ?? '.';
     const maxCommits = maxIndex >= 0 ? Number(rest[maxIndex + 1]) : 100;
     if (!Number.isInteger(maxCommits) || maxCommits < 1 || maxCommits > 5000) {
@@ -179,9 +180,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   }
   if (action === 'graphql') {
     if (!rest[0] || !rest.includes('--authorized')) {
-      throw new UsageError(
-        'Usage: kinga assurance graphql <endpoint> --authorized',
-      );
+      throw new UsageError('Usage: kinga assurance graphql <endpoint> --authorized');
     }
     let auth:
       | {
@@ -233,8 +232,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     return 0;
   }
   if (action === 'api') {
-    if (!rest[0])
-      throw new UsageError('Usage: kinga assurance api <openapi.json> [output.json]');
+    if (!rest[0]) throw new UsageError('Usage: kinga assurance api <openapi.json> [output.json]');
     const input = path.resolve(ctx.cwd, rest[0]);
     const stat = await fs.stat(input).catch(() => null);
     if (!stat?.isFile()) throw new UserError(`Not an API contract file: ${input}`);
@@ -278,9 +276,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     if (!finding.line || !finding.target || finding.domain === 'web') {
       throw new UserError('This finding has no supported source-file location.');
     }
-    const projectTargets = result.targets.filter(
-      (target) => target.kind === 'project',
-    );
+    const projectTargets = result.targets.filter((target) => target.kind === 'project');
     if (projectTargets.length !== 1) {
       throw new UserError(
         'A safe preview requires a scan report containing exactly one project target.',
@@ -297,12 +293,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
       throw new UserError('Source file is missing or exceeds the 2 MB preview limit.');
     }
     const source = await fs.readFile(sourcePath, 'utf8');
-    const preview = previewSafeRemediation(
-      finding.rule,
-      finding.target,
-      source,
-      finding.line,
-    );
+    const preview = previewSafeRemediation(finding.rule, finding.target, source, finding.line);
     if (!preview) {
       throw new UserError(
         'No safe automatic preview is available for this rule or source line. Apply a manual fix using the finding guidance.',

@@ -32,9 +32,7 @@ describe('safe remediation previews', () => {
   });
 
   it('refuses unsupported rules and malformed locations', () => {
-    expect(
-      previewSafeRemediation('CODE-INJ-001', 'src/a.ts', 'exec(input)', 1),
-    ).toBeNull();
+    expect(previewSafeRemediation('CODE-INJ-001', 'src/a.ts', 'exec(input)', 1)).toBeNull();
     expect(
       previewSafeRemediation('CODE-WEB-002', 'src/a.html', '<a target="_blank">x</a>', 0),
     ).toBeNull();

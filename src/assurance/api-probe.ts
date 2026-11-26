@@ -47,12 +47,14 @@ export async function probeApiReadOperations(
   baseUrlInput: string,
   options: ApiProbeOptions,
 ): Promise<ApiProbeReport> {
-  if (!options.authorized) throw new Error('API probing requires explicit --authorized confirmation.');
+  if (!options.authorized)
+    throw new Error('API probing requires explicit --authorized confirmation.');
   const root = object(document);
   if (!root) throw new Error('API contract must be a JSON object.');
   const openapi = typeof root.openapi === 'string' && /^3\.(0|1)(\.\d+)?$/.test(root.openapi);
   const swagger = root.swagger === '2.0';
-  if (!openapi && !swagger) throw new Error('Only OpenAPI 3.x and Swagger 2.0 JSON contracts are supported.');
+  if (!openapi && !swagger)
+    throw new Error('Only OpenAPI 3.x and Swagger 2.0 JSON contracts are supported.');
 
   let base: URL;
   try {
@@ -60,7 +62,13 @@ export async function probeApiReadOperations(
   } catch {
     throw new Error('Base URL must be an absolute HTTP(S) URL.');
   }
-  if (!['http:', 'https:'].includes(base.protocol) || base.username || base.password || base.search || base.hash) {
+  if (
+    !['http:', 'https:'].includes(base.protocol) ||
+    base.username ||
+    base.password ||
+    base.search ||
+    base.hash
+  ) {
     throw new Error('Base URL must be HTTP(S) without credentials, query or fragment.');
   }
   if (options.auth && options.auth.origin !== base.origin) {
@@ -69,8 +77,7 @@ export async function probeApiReadOperations(
   const local =
     base.hostname === 'localhost' ||
     base.hostname.endsWith('.localhost') ||
-    (isIP(base.hostname.replace(/^\[|\]$/g, '')) === 4 &&
-      base.hostname.startsWith('127.')) ||
+    (isIP(base.hostname.replace(/^\[|\]$/g, '')) === 4 && base.hostname.startsWith('127.')) ||
     base.hostname.replace(/^\[|\]$/g, '') === '::1';
   if (options.auth && base.protocol !== 'https:' && !local) {
     throw new Error('Credentials are never sent to remote HTTP API targets; use HTTPS.');
@@ -101,7 +108,10 @@ export async function probeApiReadOperations(
   for (const [operationIndex, operation] of operations.entries()) {
     if (operationIndex > 0) await new Promise((resolve) => setTimeout(resolve, 150));
     const path = operation.path.replace(/\{[^}]+\}/g, 'kinga-probe');
-    const url = new URL(path.replace(/^\//, ''), base.toString().endsWith('/') ? base : `${base.toString()}/`);
+    const url = new URL(
+      path.replace(/^\//, ''),
+      base.toString().endsWith('/') ? base : `${base.toString()}/`,
+    );
     if (url.origin !== base.origin) {
       results.push({
         method: 'GET',
@@ -118,7 +128,10 @@ export async function probeApiReadOperations(
     const timer = setTimeout(() => controller.abort(), options.timeoutMs ?? 8000);
     const started = Date.now();
     try {
-      const headers: Record<string, string> = { accept: 'application/json', 'user-agent': 'Kinga security scanner' };
+      const headers: Record<string, string> = {
+        accept: 'application/json',
+        'user-agent': 'Kinga security scanner',
+      };
       if (options.auth) headers[options.auth.headerName] = options.auth.headerValue;
       const response = await fetch(url, {
         method: 'GET',
@@ -142,7 +155,8 @@ export async function probeApiReadOperations(
           id: 'API-RUNTIME-001',
           severity: 'medium',
           path: operation.path,
-          message: 'An operation declared as protected returned a success status without credentials; verify authorization enforcement.',
+          message:
+            'An operation declared as protected returned a success status without credentials; verify authorization enforcement.',
         });
       }
     } catch (error) {

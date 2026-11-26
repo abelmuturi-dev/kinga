@@ -97,9 +97,7 @@ describe('OpenAPI contract audit', () => {
 
     expect(report.publicOperations).toBe(1);
     expect(
-      report.issues.some((issue) =>
-        issue.message.includes('anonymous-access alternative'),
-      ),
+      report.issues.some((issue) => issue.message.includes('anonymous-access alternative')),
     ).toBe(true);
     expect(report.issues.some((issue) => issue.id === 'API-AUTH-004')).toBe(true);
     expect(report.issues.some((issue) => issue.id === 'API-SERVER-005')).toBe(false);
@@ -140,9 +138,7 @@ describe('OpenAPI contract audit', () => {
     });
 
     expect(report.issues.some((issue) => issue.id === 'API-SERVER-001')).toBe(true);
-    expect(report.issues.find((issue) => issue.id === 'API-SERVER-001')?.severity).toBe(
-      'info',
-    );
+    expect(report.issues.find((issue) => issue.id === 'API-SERVER-001')?.severity).toBe('info');
   });
 
   it('rejects unsupported and malformed documents', () => {

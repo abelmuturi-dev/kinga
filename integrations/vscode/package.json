@@ -4,13 +4,22 @@
   "description": "Run the local Kinga security scanner and show findings as editor diagnostics.",
   "version": "0.1.0",
   "publisher": "abelmuturi-dev",
-  "engines": { "vscode": "^1.85.0" },
-  "categories": ["Other"],
-  "activationEvents": ["onCommand:kinga.scanWorkspace"],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:kinga.scanWorkspace"
+  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
-      { "command": "kinga.scanWorkspace", "title": "Kinga: Scan Workspace" }
+      {
+        "command": "kinga.scanWorkspace",
+        "title": "Kinga: Scan Workspace"
+      }
     ]
   }
 }

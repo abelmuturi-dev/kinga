@@ -3,10 +3,7 @@ import { analyseTaint } from '../src/scanners/code/taint.js';
 
 describe('AST taint analysis', () => {
   it('tracks request input through a variable into a command sink', () => {
-    const flows = analyseTaint(
-      'const command = req.query.command;\nexec(command);',
-      'sample.ts',
-    );
+    const flows = analyseTaint('const command = req.query.command;\nexec(command);', 'sample.ts');
     expect(flows).toHaveLength(1);
     expect(flows[0]?.rule).toBe('CODE-TAINT-001');
     expect(flows[0]?.sink).toBe('exec');
