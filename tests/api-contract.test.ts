@@ -122,6 +122,28 @@ describe('OpenAPI contract audit', () => {
     );
   });
 
+  it('treats omitted OpenAPI servers as the specification default', () => {
+    const report = auditApiContract({
+      openapi: '3.1.0',
+      components: {
+        securitySchemes: {
+          bearerAuth: { type: 'http', scheme: 'bearer' },
+        },
+      },
+      security: [{ bearerAuth: [] }],
+      paths: {
+        '/health': {
+          get: { operationId: 'health', responses: {} },
+        },
+      },
+    });
+
+    expect(report.issues.some((issue) => issue.id === 'API-SERVER-001')).toBe(true);
+    expect(report.issues.find((issue) => issue.id === 'API-SERVER-001')?.severity).toBe(
+      'info',
+    );
+  });
+
   it('rejects unsupported and malformed documents', () => {
     expect(() => auditApiContract([])).toThrow(/JSON object/);
     expect(() => auditApiContract({ openapi: '2.0', paths: {} })).toThrow(/Only OpenAPI/);
