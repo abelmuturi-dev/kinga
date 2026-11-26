@@ -271,6 +271,25 @@ export function auditApiContract(document: unknown): ApiContractReport {
         return requirementObject !== null && Object.keys(requirementObject).length === 0;
       }) ?? false;
 
+      if (effectiveSecurity) {
+        for (const requirement of effectiveSecurity) {
+          const requirementObject = object(requirement);
+          if (!requirementObject) continue;
+          for (const schemeName of Object.keys(requirementObject)) {
+            if (!(schemeName in schemes)) {
+              add(
+                issues,
+                'API-AUTH-004',
+                'high',
+                location,
+                `Security requirement references undefined scheme "${schemeName}".`,
+                'Define the referenced security scheme or correct the requirement name.',
+              );
+            }
+          }
+        }
+      }
+
       if (!effectiveSecurity || effectiveSecurity.length === 0 || allowsAnonymous) {
         publicOperations++;
         const mutating = ['put', 'post', 'patch', 'delete'].includes(method);
@@ -288,22 +307,6 @@ export function auditApiContract(document: unknown): ApiContractReport {
         );
       } else {
         securedOperations++;
-        for (const requirement of effectiveSecurity) {
-          const requirementObject = object(requirement);
-          if (!requirementObject) continue;
-          for (const schemeName of Object.keys(requirementObject)) {
-            if (!(schemeName in schemes)) {
-              add(
-                issues,
-                'API-AUTH-004',
-                'high',
-                location,
-                `Security requirement references undefined scheme "${schemeName}".`,
-                'Define the referenced security scheme or correct the requirement name.',
-              );
-            }
-          }
-        }
       }
     }
   }
