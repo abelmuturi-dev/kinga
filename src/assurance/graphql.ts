@@ -46,7 +46,9 @@ export async function auditGraphqlEndpoint(
   if (!['http:', 'https:'].includes(endpoint.protocol) || endpoint.username || endpoint.password) {
     throw new Error('GraphQL endpoint must be HTTP(S) and must not contain URL credentials.');
   }
-  if (endpoint.hash) throw new Error('GraphQL endpoint must not contain a URL fragment.');
+  if (endpoint.hash || endpoint.search) {
+    throw new Error('GraphQL endpoint must not contain a query string or URL fragment.');
+  }
   const local =
     endpoint.hostname === 'localhost' ||
     endpoint.hostname.endsWith('.localhost') ||
