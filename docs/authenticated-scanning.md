@@ -22,7 +22,9 @@ Safety boundaries:
 - Only Authorization and Cookie headers are accepted.
 - Credentials are attached only when the request origin exactly matches the configured origin.
 - Credentials are not sent to a different scheme, port, hostname or redirect destination.
-- Remote authenticated scans require `--authorized`.
+- Authenticated scans always require `--authorized`.
+- Credentials are never sent to non-loopback HTTP targets; HTTPS is mandatory.
+- Authenticated web scans refuse `--insecure` and stop if certificate validation fails.
 - The header value is never included in Kinga findings or reports.
 - This is header-based authentication only. It does not automate login forms, refresh tokens or
   multi-step identity-provider flows.
