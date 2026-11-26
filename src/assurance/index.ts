@@ -18,3 +18,5 @@ export { scanGitHistory, inspectGitPatch, type GitHistorySecretReport, type GitS
 export { previewSafeRemediation, type RemediationPreview } from './remediation.js';
 
 export { auditGraphqlEndpoint, type GraphqlAuditReport } from './graphql.js';
+
+export { probeApiReadOperations, type ApiProbeReport } from './api-probe.js';
