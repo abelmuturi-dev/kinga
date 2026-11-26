@@ -154,7 +154,7 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [API contract audit](docs/api-contract.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
+[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [API contract audit](docs/api-contract.md) · [Git history secret scan](docs/git-history.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
 
 ## License
 
@@ -165,7 +165,7 @@ Apache-2.0. Kinga is derived from [Mia Code](https://github.com/MiaCodeAI/Mia-Co
 
 Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV (online by
 explicit command or offline from cache), inspect DNS/email posture and local JavaScript assets,
-audit OpenAPI 3.x / Swagger 2.0 JSON contracts, compare scan reports, create indicative compliance
+audit OpenAPI 3.x / Swagger 2.0 JSON contracts, inspect local Git history for committed secrets, and compare scan reports, create indicative compliance
 mappings, save local scan history and optionally rephrase curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md).
 
 ```bash
@@ -173,5 +173,6 @@ kinga assurance sbom . bom.json
 kinga assurance osv bom.json --offline
 kinga assurance dns example.com
 kinga assurance api openapi.json
+kinga assurance git-secrets . --max-commits 200
 kinga assurance compare previous.json current.json
 ```
