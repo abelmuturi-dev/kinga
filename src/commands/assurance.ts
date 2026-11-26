@@ -278,10 +278,19 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
     if (!finding.line || !finding.target || finding.domain === 'web') {
       throw new UserError('This finding has no supported source-file location.');
     }
-    const sourcePath = path.resolve(ctx.cwd, finding.target);
-    const relative = path.relative(ctx.cwd, sourcePath);
+    const projectTargets = result.targets.filter(
+      (target) => target.kind === 'project',
+    );
+    if (projectTargets.length !== 1) {
+      throw new UserError(
+        'A safe preview requires a scan report containing exactly one project target.',
+      );
+    }
+    const projectRoot = path.resolve(projectTargets[0]!.path);
+    const sourcePath = path.resolve(projectRoot, finding.target);
+    const relative = path.relative(projectRoot, sourcePath);
     if (relative === '' || relative.startsWith('..') || path.isAbsolute(relative)) {
-      throw new UserError('Refusing to preview a patch outside the current project directory.');
+      throw new UserError('Refusing to preview a patch outside the scanned project directory.');
     }
     const stat = await fs.stat(sourcePath).catch(() => null);
     if (!stat?.isFile() || stat.size > 2_000_000) {
