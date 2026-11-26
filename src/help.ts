@@ -52,7 +52,7 @@ const TOPIC_HELP: Record<string, string> = {
   ask: `${C} ask "<question>"\\n\\nAnswers from the built-in knowledge base, offline.`,
   explain: `${C} explain <topic>\\n\\nShows full guidance for a knowledge-base topic.`,
   baseline: `${C} baseline [dir]\\n\\nSaves fingerprints of current findings for future comparisons.`,
-  assurance: `${C} assurance <sbom|osv|dns|js|api|git-secrets|compare|compliance|history|rephrase> ...\\n\\nGenerate SBOMs, check OSV, inspect DNS, JavaScript, API contracts, GraphQL endpoints and Git history secrets, compare scans, map compliance controls, save history or rephrase curated advice locally.`,
+  assurance: `${C} assurance <benchmark|sbom|osv|dns|js|api|api-probe|graphql|git-secrets|fix-preview|compare|compliance|history|rephrase> ...\\n\\nGenerate SBOMs, run fixture benchmarks, audit API contracts and GraphQL endpoints, inspect Git history, preview safe patches, compare scans and map compliance controls.`,
   watch: `${C} watch [project-directory]\\n\\nRuns a code scan and repeats it when project files change. Press Ctrl+C to stop.`,
   init: `${C} init\\n\\nWrites a starter ${BRAND.configFile}.`,
 };
