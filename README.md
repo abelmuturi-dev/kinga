@@ -64,7 +64,7 @@ csrf-token-missing  (CWE-352)
 
 ## Install
 
-Requires Node.js 22.12+.
+Requires Node.js 22.13+.
 
 ```bash
 npm install
