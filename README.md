@@ -81,7 +81,8 @@ kinga --version
 | `active`            | Plus: CORS/`OPTIONS` probes, a small same-origin crawl, ~18 requests for well-known sensitive paths, TLS 1.0/1.1/1.3 handshakes |
 
 Requests identify themselves (`Kinga-Security-Scanner/…`), are rate limited (`--delay`), capped
-(`--max-requests`, default 80), send no bodies, never log in and never exploit anything.
+(`--max-requests`, default 80), send no bodies and never exploit anything. Scans are anonymous by
+default; optional header-based authentication is available for one explicitly configured origin.
 **Active scans of non-local hosts require `--authorized`**, your confirmation that you own the
 target or have written permission. Localhost and private-network addresses (dev servers) need no
 flag. Contents of exposed files are checked in memory and never written to a report.
@@ -144,8 +145,9 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 ## Limits: please read
 
-- **Not a penetration test.** Web scans see only what an anonymous visitor sees and do not exploit
-  anything. Business-logic and access-control bugs between users are out of reach.
+- **Not a penetration test.** Web scans are anonymous by default; optional exact-origin header
+  authentication is supported. Dynamic API checks are bounded and read-only. Business-logic and
+  access-control bugs between users remain out of reach.
 - **Code findings combine pattern rules with a conservative JavaScript/TypeScript AST taint pass.**
   The taint pass is intraprocedural and heuristic; it is not proof of exploitability.
 - **The advisory database is a curated snapshot** (~60 high-impact CVEs), not a full feed. Use
