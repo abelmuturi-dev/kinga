@@ -1,5 +1,5 @@
-import { CODE_RULES } from '../scanners/code/rules.js';
-import type { BenchmarkCase } from './metrics.js';
+import { CODE_RULES } from '../../src/scanners/code/rules.js';
+import type { BenchmarkCase } from '../../src/benchmark/metrics.js';
 
 export interface RuleFixture {
   id: string;
