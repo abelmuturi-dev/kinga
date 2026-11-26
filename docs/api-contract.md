@@ -15,6 +15,6 @@ The audit checks:
 - Security requirements that reference undefined schemes.
 - Duplicate or missing operation IDs.
 
-Security is inherited from the document-level `security` property unless an operation defines its own. An operation with `security: []` is treated as intentionally public by the contract and is reported so that the decision can be reviewed. A public endpoint is not automatically a vulnerability: health checks, login and public catalogue routes may be intentionally unauthenticated.
+Security is inherited from the document-level `security` property unless an operation defines its own. An operation with `security: []`, or a security requirement list containing an empty `{}` alternative, permits anonymous access and is reported so that the decision can be reviewed. Relative server URLs are accepted because they inherit the API document's origin. A public endpoint is not automatically a vulnerability: health checks, login and public catalogue routes may be intentionally unauthenticated.
 
 The audit is local and static. It does not call API endpoints, authenticate, fuzz parameters, validate business logic, or prove server-side access control. It currently accepts JSON input, not YAML. Results are review prompts, not a penetration-test verdict.
