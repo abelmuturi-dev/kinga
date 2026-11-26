@@ -137,7 +137,11 @@ export async function runCodeScan(
   // AST-assisted, intraprocedural taint candidates for JavaScript and TypeScript.
   // This supplements regex rules; it does not claim interprocedural proof.
   await mapLimit(targets, 8, async (file) => {
-    if (!/\.(?:[cm]?[jt]sx?)$/i.test(file.path)) return;
+    if (
+      !/\.(?:[cm]?[jt]sx?)$/i.test(file.path) ||
+      isTestFile(file.path) ||
+      isDocOrExample(file.path)
+    ) return;
     let sourceText: string;
     try {
       sourceText = (await readTextFile(inventory.root, file.path, {
