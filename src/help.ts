@@ -13,7 +13,7 @@ Usage
   ${C} explain <topic>       Show the full fix guidance for a topic
   ${C} topics                List the topics the advisor knows
   ${C} baseline [dir]        Record current findings so later scans show only new ones
-  ${C} assurance <action>    SBOM, OSV, DNS, API contracts, Git history secrets and compliance
+  ${C} assurance <action>    SBOM, OSV, DNS, API contracts, GraphQL endpoints, Git history secrets and compliance
   ${C} watch [dir]           Rescan a project when source files change
   ${C} init                  Create ${BRAND.configFile}
   ${C} help [command]        Help
@@ -52,7 +52,7 @@ const TOPIC_HELP: Record<string, string> = {
   ask: `${C} ask "<question>"\\n\\nAnswers from the built-in knowledge base, offline.`,
   explain: `${C} explain <topic>\\n\\nShows full guidance for a knowledge-base topic.`,
   baseline: `${C} baseline [dir]\\n\\nSaves fingerprints of current findings for future comparisons.`,
-  assurance: `${C} assurance <sbom|osv|dns|js|api|git-secrets|compare|compliance|history|rephrase> ...\\n\\nGenerate SBOMs, check OSV, inspect DNS, JavaScript, API contracts and Git history secrets, compare scans, map compliance controls, save history or rephrase curated advice locally.`,
+  assurance: `${C} assurance <sbom|osv|dns|js|api|git-secrets|compare|compliance|history|rephrase> ...\\n\\nGenerate SBOMs, check OSV, inspect DNS, JavaScript, API contracts, GraphQL endpoints and Git history secrets, compare scans, map compliance controls, save history or rephrase curated advice locally.`,
   watch: `${C} watch [project-directory]\\n\\nRuns a code scan and repeats it when project files change. Press Ctrl+C to stop.`,
   init: `${C} init\\n\\nWrites a starter ${BRAND.configFile}.`,
 };
