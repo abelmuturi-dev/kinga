@@ -163,7 +163,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
         origin.search ||
         origin.hash ||
         (headerName !== 'authorization' && headerName !== 'cookie') ||
-        /[\\r\\n]/.test(authValue) ||
+        /[\r\n]/.test(authValue) ||
         authValue.length > 8192
       ) {
         throw new UsageError('Invalid API authentication origin or header configuration.');
@@ -214,7 +214,7 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
         origin.search ||
         origin.hash ||
         (headerName !== 'authorization' && headerName !== 'cookie') ||
-        /[\\r\\n]/.test(authValue) ||
+        /[\r\n]/.test(authValue) ||
         authValue.length > 8192
       ) {
         throw new UsageError('Invalid GraphQL authentication origin or header configuration.');
