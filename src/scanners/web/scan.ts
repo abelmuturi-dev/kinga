@@ -90,9 +90,7 @@ export async function runWebScan(
   if (options.auth && !options.authorized && !local) {
     throw new UserError('Authenticated scanning requires --authorized for non-local targets.');
   }
-  if (options.auth && options.auth.origin !== target.origin) {
-    throw new UserError('KINGA_AUTH_ORIGIN must exactly match the scanned target origin.');
-  }
+  const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
   if (options.level === 'active' && !local && !options.authorized) {
     throw new UserError(
       `Active scanning sends extra probe requests, so it needs your confirmation that you own ${target.host} or have written permission to test it.\n` +
@@ -108,7 +106,7 @@ export async function runWebScan(
     userAgent: BRAND.userAgent(options.version),
     insecure: options.insecure,
     sleep: options.sleep,
-    ...(options.auth ? { auth: options.auth } : {}),
+    ...(scopedAuth ? { auth: scopedAuth } : {}),
   });
   const ctx: WebContext = {
     target,
