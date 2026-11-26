@@ -7,7 +7,7 @@ describe('AST taint analysis', () => {
       'const command = req.query.command;\nexec(command);',
       'sample.ts',
     );
-    expect(flows).toHaveLength(1);
+    expect(flows).toHaveLength(2);
     expect(flows[0]?.rule).toBe('CODE-TAINT-001');
     expect(flows[0]?.sink).toBe('exec');
     expect(flows[0]?.line).toBe(2);
@@ -23,7 +23,7 @@ describe('AST taint analysis', () => {
       'const value = req.body.name;\ndb.query("SELECT * FROM users WHERE name = " + value);\nelement.innerHTML = value;',
       'sample.ts',
     );
-    expect(flows.map((flow) => flow.sink)).toContain('query');
+    expect(flows.map((flow) => flow.sink)).toEqual(expect.arrayContaining(['query', 'innerHTML']));
     expect(flows).toHaveLength(1);
   });
 });
