@@ -45,6 +45,23 @@ describe('authorized API read-only probing', () => {
     expect(report.issues[0]?.id).toBe('API-RUNTIME-001');
   });
 
+  it('refuses credentials over remote cleartext HTTP', async () => {
+    await expect(
+      probeApiReadOperations(
+        { openapi: '3.0.3', paths: {} },
+        'http://api.example.test',
+        {
+          authorized: true,
+          auth: {
+            origin: 'http://api.example.test',
+            headerName: 'authorization',
+            headerValue: 'Bearer test',
+          },
+        },
+      ),
+    ).rejects.toThrow(/HTTPS/);
+  });
+
   it('refuses to probe without explicit authorization', async () => {
     await expect(
       probeApiReadOperations({ openapi: '3.0.3', paths: {} }, 'http://127.0.0.1', {
