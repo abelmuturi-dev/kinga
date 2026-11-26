@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports, no-undef */
 const vscode = require('vscode');
 const { execFile } = require('node:child_process');
 
