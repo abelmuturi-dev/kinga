@@ -146,8 +146,8 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 - **Not a penetration test.** Web scans see only what an anonymous visitor sees and do not exploit
   anything. Business-logic and access-control bugs between users are out of reach.
-- **Code findings are pattern matches** with no data-flow analysis. Each is labelled _pattern
-  match, not proven_; confirm that attacker-controlled data reaches the line.
+- **Code findings combine pattern rules with a conservative JavaScript/TypeScript AST taint pass.**
+  The taint pass is intraprocedural and heuristic; it is not proof of exploitability.
 - **The advisory database is a curated snapshot** (~60 high-impact CVEs), not a full feed. Use
   `npm audit`, `pip-audit` or OSV-Scanner as well, or add entries via `advisoriesFile`.
 - Version-based findings (server banners, library names in URLs) can be wrong when software is
@@ -156,7 +156,7 @@ only **new** ones, useful for adopting Kinga on an existing project.
 
 ## Documentation
 
-[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [API contract audit](docs/api-contract.md) · [Git history secret scan](docs/git-history.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
+[Architecture](docs/architecture.md) · [Advisor](docs/advisor.md) · [Rules & knowledge base](docs/rules.md) · [API contract audit](docs/api-contract.md) · [API probes](docs/api-probe.md) · [GraphQL audit](docs/graphql-audit.md) · [Git history secret scan](docs/git-history.md) · [Benchmark methodology](docs/benchmark-methodology.md) · [Developer integrations](docs/developer-integrations.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
 
 ## License
 
@@ -169,13 +169,17 @@ Kinga can generate CycloneDX 1.5 SBOMs, check exact package versions against OSV
 explicit command or offline from cache), inspect DNS/email posture and local JavaScript assets,
 audit OpenAPI 3.x / Swagger 2.0 JSON contracts, inspect local Git history for committed secrets, and
 compare scan reports. It also creates indicative compliance mappings, saves local scan history, and
-optionally rephrases curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md), [authenticated scanning](docs/authenticated-scanning.md) and [developer integrations](docs/developer-integrations.md).
+optionally rephrases curated advice with Ollama on loopback. See [Assurance documentation](docs/assurance.md), [authenticated scanning](docs/authenticated-scanning.md), [developer integrations](docs/developer-integrations.md) and [benchmark methodology](docs/benchmark-methodology.md).
 
 ```bash
 kinga assurance sbom . bom.json
 kinga assurance osv bom.json --offline
 kinga assurance dns example.com
 kinga assurance api openapi.json
+kinga assurance api-probe openapi.json https://staging.example.com --authorized
+kinga assurance graphql https://staging.example.com/graphql --authorized
+kinga assurance benchmark
 kinga assurance git-secrets . --max-commits 200
+kinga assurance fix-preview scan.json 0
 kinga assurance compare previous.json current.json
 ```
