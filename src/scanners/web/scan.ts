@@ -102,6 +102,9 @@ export async function runWebScan(
   if (scopedAuth && target.protocol !== 'https:' && !loopback) {
     throw new UserError('Credentials are never sent to non-loopback HTTP targets; use HTTPS.');
   }
+  if (scopedAuth && options.insecure) {
+    throw new UserError('Authenticated scans cannot use --insecure; valid TLS certificate verification is required.');
+  }
   if (options.level === 'active' && !local && !options.authorized) {
     throw new UserError(
       `Active scanning sends extra probe requests, so it needs your confirmation that you own ${target.host} or have written permission to test it.\n` +
@@ -214,6 +217,12 @@ async function collect(ctx: WebContext, options: WebScanOptions): Promise<void> 
   let first: HttpResult = await client.request(target.toString());
   if (isFailure(first) && first.certificate) {
     ctx.certificateError = { code: first.code, message: first.message };
+    if (options.auth?.origin === target.origin) {
+      ctx.notes.push(
+        'Authenticated scan stopped after certificate validation failed; credentials were not sent with verification disabled.',
+      );
+      return;
+    }
     client.setInsecure(true);
     first = await client.request(target.toString());
   }
