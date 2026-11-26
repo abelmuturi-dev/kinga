@@ -12,8 +12,6 @@ export interface TaintFlow {
 
 const SOURCE = /(?:req\.(?:body|query|params|headers|cookies)|request\.(?:args|form|values|json|GET|POST|data|query_params|body)|\$_(?:GET|POST|REQUEST|COOKIE|FILES)|process\.argv|URLSearchParams|searchParams\.get|location\.(?:search|hash))/;
 const SINK_CALL = /^(?:eval|exec|execSync|execFile|spawn|query|execute|raw|innerHTML|outerHTML|write|writeFile|readFile|createElement)$/;
-const SINK_OBJECT = /^(?:child_process|connection|db|database|pool|sequelize|knex|document|element|fs|filesystem)$/;
-
 function nodeText(node: ts.Node, source: ts.SourceFile): string {
   return node.getText(source).slice(0, 240);
 }
@@ -95,50 +93,6 @@ export function analyseTaint(sourceText: string, fileName = 'source.ts'): TaintF
       } else {
         tainted.delete(node.left.text);
         origins.delete(node.left.text);
-      }
-    }
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      ts.isPropertyAccessExpression(node.left) &&
-      ['innerHTML', 'outerHTML'].includes(node.left.name.text) &&
-      expressionIsTainted(node.right)
-    ) {
-      const location = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-      const key = `dom:${location}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        flows.push({
-          rule: 'CODE-TAINT-001',
-          severity: 'medium',
-          confidence: 'low',
-          source: 'request-derived value (tracked expression)',
-          sink: node.left.name.text,
-          line: location,
-          evidence: `AST flow candidate from untrusted input to ${node.left.name.text}; review output encoding and sanitization.`,
-        });
-      }
-    }
-    if (
-      ts.isBinaryExpression(node) &&
-      node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
-      ts.isPropertyAccessExpression(node.left) &&
-      ['innerHTML', 'outerHTML'].includes(node.left.name.text) &&
-      expressionIsTainted(node.right)
-    ) {
-      const location = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
-      const key = `dom:${location}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        flows.push({
-          rule: 'CODE-TAINT-001',
-          severity: 'medium',
-          confidence: 'low',
-          source: 'request-derived value (tracked expression)',
-          sink: node.left.name.text,
-          line: location,
-          evidence: `AST flow candidate from untrusted input to ${node.left.name.text}; review output encoding and sanitization.`,
-        });
       }
     }
     if (ts.isCallExpression(node)) {
