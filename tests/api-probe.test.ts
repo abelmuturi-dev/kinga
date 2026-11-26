@@ -47,18 +47,14 @@ describe('authorized API read-only probing', () => {
 
   it('refuses credentials over remote cleartext HTTP', async () => {
     await expect(
-      probeApiReadOperations(
-        { openapi: '3.0.3', paths: {} },
-        'http://api.example.test',
-        {
-          authorized: true,
-          auth: {
-            origin: 'http://api.example.test',
-            headerName: 'authorization',
-            headerValue: 'Bearer test',
-          },
+      probeApiReadOperations({ openapi: '3.0.3', paths: {} }, 'http://api.example.test', {
+        authorized: true,
+        auth: {
+          origin: 'http://api.example.test',
+          headerName: 'authorization',
+          headerValue: 'Bearer test',
         },
-      ),
+      }),
     ).rejects.toThrow(/HTTPS/);
   });
 

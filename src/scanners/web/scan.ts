@@ -103,7 +103,9 @@ export async function runWebScan(
     throw new UserError('Credentials are never sent to non-loopback HTTP targets; use HTTPS.');
   }
   if (scopedAuth && options.insecure) {
-    throw new UserError('Authenticated scans cannot use --insecure; valid TLS certificate verification is required.');
+    throw new UserError(
+      'Authenticated scans cannot use --insecure; valid TLS certificate verification is required.',
+    );
   }
   if (options.level === 'active' && !local && !options.authorized) {
     throw new UserError(
