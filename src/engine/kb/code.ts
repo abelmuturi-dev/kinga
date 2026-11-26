@@ -1147,6 +1147,28 @@ export const CODE_TOPICS: TopicMap = {
       'https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/controlling-permissions-for-github_token',
     ],
   },
+  'tainted-input': {
+    cwe: ['CWE-20', 'CWE-74', 'CWE-79'],
+    owasp: ['A03'],
+    effort: 'hours',
+    summary:
+      'Trace untrusted input to the sensitive operation and validate or encode it for that exact context.',
+    why:
+      'A value originating from a request, URL or command-line argument can become dangerous when it reaches a shell, query or HTML sink without context-appropriate protection.',
+    steps: [
+      'Confirm the source and sink in the application context; AST taint results are review candidates, not proof.',
+      'Prefer parameterized database queries and argument arrays rather than shell command strings.',
+      'Apply context-specific output encoding or a maintained sanitizer before inserting data into HTML.',
+      'Re-run Kinga and add a regression test for the corrected data flow.',
+    ],
+    examples: [],
+    verify:
+      'Confirm untrusted values cannot reach the sensitive sink without a suitable parameterization, validation or context-specific encoding step.',
+    references: [
+      REF.owasp('Injection_Prevention_Cheat_Sheet'),
+      REF.owasp('Cross_Site_Scripting_Prevention_Cheat_Sheet'),
+    ],
+  },
   'curl-pipe-shell': {
     cwe: ['CWE-494'],
     owasp: ['A08'],
