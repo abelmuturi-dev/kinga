@@ -88,19 +88,19 @@ export async function runWebScan(
 ): Promise<WebScanOutput> {
   const target = normalizeTarget(targetInput);
   const local = isLocalHost(target.hostname);
-  if (options.auth && !options.authorized) {
+  const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
+  if (scopedAuth && !options.authorized) {
     throw new UserError('Authenticated scanning always requires explicit --authorized confirmation.');
   }
   const loopback =
     target.hostname === 'localhost' ||
     target.hostname.endsWith('.localhost') ||
-    (isIP(target.hostname.replace(/^\\[|\\]$/g, '')) === 4 &&
+    (isIP(target.hostname.replace(/^\[|\]$/g, '')) === 4 &&
       target.hostname.startsWith('127.')) ||
-    target.hostname.replace(/^\\[|\\]$/g, '') === '::1';
-  if (options.auth && target.protocol !== 'https:' && !loopback) {
+    target.hostname.replace(/^\[|\]$/g, '') === '::1';
+  if (scopedAuth && target.protocol !== 'https:' && !loopback) {
     throw new UserError('Credentials are never sent to non-loopback HTTP targets; use HTTPS.');
   }
-  const scopedAuth = options.auth?.origin === target.origin ? options.auth : undefined;
   if (options.level === 'active' && !local && !options.authorized) {
     throw new UserError(
       `Active scanning sends extra probe requests, so it needs your confirmation that you own ${target.host} or have written permission to test it.\n` +
