@@ -1,0 +1,11 @@
+Kinga
+Copyright 2026 the Kinga contributors
+
+This product is a derivative work of "Mia Code" (https://github.com/MiaCodeAI/Mia-Code),
+licensed under the Apache License, Version 2.0. The following parts originate from Mia Code and
+were modified: repository inventory and indexing (src/repo), git helpers (src/project), safe file
+access (src/platform), secret redaction (src/security), terminal styling (src/ui) and small
+utilities (src/util). The AI-provider, credential-store, agent and chat layers of Mia Code were
+removed. All other files are new.
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).

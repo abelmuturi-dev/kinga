@@ -1,0 +1,9 @@
+{
+  "ignorePaths": [
+    "src/engine/kb/",
+    "src/scanners/code/rules.ts",
+    "src/scanners/deps/advisories.ts",
+    "tests/"
+  ],
+  "failOn": "high"
+}
