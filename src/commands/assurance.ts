@@ -34,7 +34,9 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
   }
   if (action === 'osv') {
     if (!rest[0])
-      throw new UsageError('Usage: kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]');
+      throw new UsageError(
+        'Usage: kinga assurance osv <bom.json> [--offline|--refresh] [cache.json]',
+      );
     const input = path.resolve(ctx.cwd, rest[0]);
     const offline = rest.includes('--offline');
     const refresh = rest.includes('--refresh');
@@ -119,17 +121,24 @@ export async function assuranceCommand(args: string[], ctx: Context): Promise<nu
         .filter((name) => name.endsWith('.json'))
         .sort()
         .reverse();
-      if (names.length < 2) throw new UserError('At least two saved scans are needed for a history comparison.');
+      if (names.length < 2)
+        throw new UserError('At least two saved scans are needed for a history comparison.');
       const current = await loadScanResult(path.join(directory, names[0]!));
       const previous = await loadScanResult(path.join(directory, names[1]!));
       const delta = compareScanResults(previous, current);
-      ctx.print(JSON.stringify({
-        previousFindings: delta.previousCount,
-        currentFindings: delta.currentCount,
-        added: delta.added.length,
-        resolved: delta.resolved.length,
-        persisting: delta.persisting.length,
-      }, null, 2));
+      ctx.print(
+        JSON.stringify(
+          {
+            previousFindings: delta.previousCount,
+            currentFindings: delta.currentCount,
+            added: delta.added.length,
+            resolved: delta.resolved.length,
+            persisting: delta.persisting.length,
+          },
+          null,
+          2,
+        ),
+      );
       return 0;
     }
     if (!rest[0]) throw new UsageError('Usage: kinga assurance history <scan.json|list|compare>');
